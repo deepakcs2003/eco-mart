@@ -3,8 +3,9 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const dbConnect = require('./Config/db');
 const cookieParser = require('cookie-parser');
-const authRoutes = require('./Routes/AuthRoutes'); // ✅ Corrected import
+const authRoutes = require('./Routes/AuthRoutes'); 
 const scrapeRoutes = require('./Routes/scrapeRoutes');
+const categoryRoutes = require('./Routes/categoryRoutes')
 
 dotenv.config();
 const app = express();
@@ -13,9 +14,10 @@ app.use(express.json());
 app.use(cors({ origin: true, credentials: true }));
 app.use(cookieParser());
 
-// ✅ Corrected Router Usage
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/scrape',scrapeRoutes);
+app.use('/api/v1/categories',categoryRoutes)
+
 app.get('/', (req, res) => {
   res.send('Welcome to the Eco-Mart API Home Page!');
 });

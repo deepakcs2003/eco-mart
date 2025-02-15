@@ -9,5 +9,17 @@ const summaryApi={
         url:`${backendDomain}/api/v1/scrape/scrape-product`,
         method:"post"
     },
+    getCategories: {
+        url: `${backendDomain}/api/v1/categories/category`,
+        method: "get",
+    },
+    getSubcategories: (category) => ({
+        url: `${backendDomain}/api/v1/categories/${category}/subcategories`,
+        method: "get",
+    }),
+    getProductsBySubcategory: (category, subcategory) => ({
+        url: `${backendDomain}/api/v1/categories/${category}/${subcategory}/products`,
+        method: "get",
+    }),
 }
 export default summaryApi

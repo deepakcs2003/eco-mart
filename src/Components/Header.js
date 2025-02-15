@@ -77,6 +77,7 @@ const Header = () => {
             <a href="/contact" className="text-white hover:text-teal-200">Contact</a>
             <a href="/profile" className="text-white hover:text-teal-200">Profile</a>
             <a href="/wishlist" className="text-white hover:text-teal-200">Wishlist</a>
+            <a href="/categories" className="text-white hover:text-teal-200">Categories</a>
           </nav>
 
           {/* Mobile Menu Button */}
