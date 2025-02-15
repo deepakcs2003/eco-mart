@@ -1,0 +1,380 @@
+/* About.css */
+
+.about-container {
+    background-color: #A8B5A2; /* Sage Green (Background) */
+    font-family: 'Poppins', Arial, sans-serif;
+    color: #8B5A2B; /* Earthy Brown (Neutral 1) */
+  }
+  
+  /* Hero Section with gradient overlay and subtle pattern */
+  .hero-section {
+    padding: 6rem 2rem;
+    background: linear-gradient(135deg, #228B22 0%, #6B8E23 100%);
+    background-image: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%2377c277' fill-opacity='0.1' fill-rule='evenodd'%3E%3Cpath d='M0 0h40v40H0V0zm40 40h40v40H40V40zm0-40h2l-2 2V0zm0 4l4-4h2l-6 6V4zm0 4l8-8h2L40 10V8zm0 4L52 0h2L40 14v-2zm0 4L56 0h2L40 18v-2zm0 4L60 0h2L40 22v-2zm0 4L64 0h2L40 26v-2zm0 4L68 0h2L40 30v-2zm0 4L72 0h2L40 34v-2zm0 4L76 0h2L40 38v-2zm0 4L80 0v2L42 40h-2zm4 0L80 4v2L46 40h-2zm4 0L80 8v2L50 40h-2zm4 0l28-28v2L54 40h-2zm4 0l24-24v2L58 40h-2zm4 0l20-20v2L62 40h-2zm4 0l16-16v2L66 40h-2zm4 0l12-12v2L70 40h-2zm4 0l8-8v2l-6 6h-2zm4 0l4-4v2l-2 2h-2z'/%3E%3C/g%3E%3C/svg%3E"),
+    linear-gradient(135deg, #228B22 0%, #6B8E23 100%);
+    text-align: center;
+    color: #F5DEB3; /* Warm Beige (Neutral 2) */
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  
+  .hero-section::after {
+    content: "";
+    position: absolute;
+    bottom: -50px;
+    left: 0;
+    width: 100%;
+    height: 100px;
+    background: #A8B5A2;
+    clip-path: polygon(0 0, 100% 50%, 100% 100%, 0% 100%);
+  }
+  
+  .hero-title {
+    font-size: 3.5rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    letter-spacing: -0.5px;
+  }
+  
+  .hero-subtitle {
+    font-size: 1.4rem;
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+  
+  .section {
+    padding: 5rem 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+  }
+  
+  .section-title {
+    font-size: 2.5rem;
+    color: #8B5A2B; /* Earthy Brown (Neutral 1) */
+    margin-bottom: 2.5rem;
+    text-align: center;
+    position: relative;
+    padding-bottom: 15px;
+  }
+  
+  .section-title::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 4px;
+    background: linear-gradient(to right, #228B22, #6B8E23);
+    border-radius: 2px;
+  }
+  
+  .mission-text {
+    font-size: 1.2rem;
+    line-height: 1.8;
+    color: #8B5A2B; /* Earthy Brown (Neutral 1) */
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  
+  /* Statistics with cards and hover effects */
+  .statistics-container {
+    display: flex;
+    justify-content: space-around;
+    padding: 5rem 2rem;
+    background-color: #F5DEB3; /* Warm Beige (Neutral 2) */
+    text-align: center;
+    position: relative;
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23e5cea3' fill-opacity='0.4' fill-rule='evenodd'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/svg%3E");
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    overflow: hidden;
+  }
+  
+  .statistics-container::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 10px;
+    background: linear-gradient(to right, #228B22, #6B8E23);
+  }
+  
+  @media (max-width: 768px) {
+    .statistics-container {
+      flex-direction: column;
+    }
+  }
+  
+  .statistic-box {
+    padding: 2rem;
+    transition: transform 0.3s ease;
+  }
+  
+  .statistic-box:hover {
+    transform: translateY(-5px);
+  }
+  
+  .statistic-number {
+    font-size: 3.5rem;
+    font-weight: bold;
+    color: #228B22; /* Forest Green (Primary) */
+    margin-bottom: 0.5rem;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+  }
+  
+  .statistic-label {
+    color: #8B5A2B; /* Earthy Brown (Neutral 1) */
+    font-size: 1.1rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2.5rem;
+    margin-top: 3rem;
+  }
+  
+  /* Enhanced feature cards with modern design */
+  .feature-card {
+    background: linear-gradient(145deg, #ffffff, #F5DEB3);
+    padding: 2.5rem;
+    border-radius: 16px;
+    text-align: center;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: pointer;
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 10px 30px rgba(139, 90, 43, 0.05);
+    overflow: hidden;
+  }
+  
+  .feature-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(0px);
+    transition: backdrop-filter 0.4s ease, opacity 0.4s ease;
+    z-index: -1;
+    border-radius: 16px;
+    opacity: 0;
+  }
+  
+  .feature-card::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(to right, #228B22, #6B8E23);
+    transition: height 0.3s ease;
+    z-index: -1;
+  }
+  
+  .feature-card:hover {
+    transform: translateY(-16px) scale(1.03);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+  }
+  
+  .feature-card:hover::before {
+    backdrop-filter: blur(5px);
+    opacity: 0.2;
+  }
+  
+  .feature-card:hover::after {
+    height: 8px;
+  }
+  
+  .feature-icon {
+    font-size: 2.5rem;
+    color: #228B22; /* Forest Green (Primary) */
+    background: linear-gradient(135deg, #228B22, #6B8E23);
+    /* -webkit-background-clip: text; */
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.5rem;
+    display: inline-block;
+  }
+  
+  .feature-title {
+    font-size: 1.4rem;
+    color: #8B5A2B; /* Earthy Brown (Neutral 1) */
+    margin: 1rem 0;
+    font-weight: 600;
+  }
+  
+  .feature-description {
+    color: #8B5A2B; /* Earthy Brown (Neutral 1) */
+    line-height: 1.6;
+    font-size: 1rem;
+    opacity: 0.9;
+  }
+  
+  /* Technology section with modern card design */
+  .technology-list {
+    background: linear-gradient(145deg, #ffffff, #F5DEB3);
+    padding: 3rem;
+    border-radius: 16px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.05);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .technology-list::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 150px;
+    height: 150px;
+    background: radial-gradient(circle, rgba(34, 139, 34, 0.1) 0%, rgba(34, 139, 34, 0) 70%);
+    border-radius: 50%;
+  }
+  
+  .technology-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding: 1rem;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.5);
+  }
+  
+  .technology-item:hover {
+    box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+    transform: translateX(10px);
+    background: rgba(255, 255, 255, 0.8);
+  }
+  
+  .technology-icon {
+    font-size: 1.8rem;
+    color: #228B22; /* Forest Green (Primary) */
+    margin-right: 1.5rem;
+    background: linear-gradient(135deg, #228B22, #6B8E23);
+    /* -webkit-background-clip: text; */
+    -webkit-text-fill-color: transparent;
+  }
+  
+  .technology-text {
+    font-size: 1.2rem;
+    color: #8B5A2B; /* Earthy Brown (Neutral 1) */
+    font-weight: 500;
+  }
+  
+  /* Join section with modern design and wave pattern */
+  .join-section {
+    padding: 6rem 2rem;
+    background-color: #317873; /* Deep Teal (Accent 1) */
+    text-align: center;
+    color: #F5DEB3; /* Warm Beige (Neutral 2) */
+    position: relative;
+    background-image: url("data:image/svg+xml,%3Csvg width='52' height='26' viewBox='0 0 52 26' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2339887f' fill-opacity='0.15'%3E%3Cpath d='M10 10c0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6h2c0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4v2c-3.314 0-6-2.686-6-6 0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6zm25.464-1.95l8.486 8.486-1.414 1.414-8.486-8.486 1.414-1.414z' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+  
+  .join-section::before,
+  .join-section::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 80px;
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+  }
+  
+  .join-section::before {
+    top: -80px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120' preserveAspectRatio='none'%3E%3Cpath d='M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z' opacity='.25' fill='%23317873'%3E%3C/path%3E%3Cpath d='M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z' opacity='.5' fill='%23317873'%3E%3C/path%3E%3Cpath d='M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z' fill='%23317873'%3E%3C/path%3E%3C/svg%3E");
+  }
+  
+  .join-title {
+    font-size: 2.8rem;
+    margin-bottom: 1.5rem;
+    font-weight: 700;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  .join-text {
+    font-size: 1.3rem;
+    margin-bottom: 3rem;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.7;
+  }
+  
+  .join-button {
+    background: linear-gradient(45deg, #F5DEB3, #e5d0a5);
+    color: #228B22; /* Forest Green (Primary) */
+    padding: 1.2rem 3rem;
+    border: none;
+    border-radius: 50px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+  }
+  
+  .join-button::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, #6B8E23, #228B22);
+    z-index: -1;
+    transition: opacity 0.3s ease;
+    opacity: 0;
+  }
+  
+  .join-button:hover {
+    color: #F5DEB3; /* Warm Beige (Neutral 2) */
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+  }
+  
+  .join-button:hover::before {
+    opacity: 1;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .hero-title {
+      font-size: 2.5rem;
+    }
+    
+    .hero-subtitle {
+      font-size: 1.1rem;
+    }
+    
+    .section-title {
+      font-size: 2rem;
+    }
+    
+    .join-title {
+      font-size: 2.2rem;
+    }
+    
+    .join-text {
+      font-size: 1.1rem;
+    }
+  }
