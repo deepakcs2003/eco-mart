@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import summaryApi from "../Common";
 
 const CategoriesPage = () => {
@@ -9,9 +8,7 @@ const CategoriesPage = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const navigate = useNavigate();
 
-  // Fetch all categories on component mount
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -31,31 +28,25 @@ const CategoriesPage = () => {
     fetchCategories();
   }, []);
 
-  // Handle category click
   const handleCategoryClick = async (categoryName) => {
     setSelectedCategory(categoryName);
     setLoading(true);
     setError(null);
 
     try {
-      // Fetch subcategories
-      const subcategoryResponse = await fetch(summaryApi.getSubcategories(categoryName).url);
-      if (!subcategoryResponse.ok) {
-        throw new Error("Failed to fetch subcategories");
+      const [subcategoryResponse, productResponse] = await Promise.all([
+        fetch(summaryApi.getSubcategories(categoryName).url),
+        fetch(`${summaryApi.getCategories.url}/${categoryName}/products`)
+      ]);
+
+      if (!subcategoryResponse.ok || !productResponse.ok) {
+        throw new Error("Failed to fetch data");
       }
+
       const subcategoriesData = await subcategoryResponse.json();
-      setSubcategories(subcategoriesData);
-
-      // Fetch products of this category
-      const productResponse = await fetch(`${summaryApi.getCategories.url}/${categoryName}/products`);
-      // console.log("print products",productResponse.json());
-
-      if (!productResponse.ok) {
-        throw new Error("Failed to fetch products");
-      }
       const productsData = await productResponse.json();
-      // console.log("print heydata",productsData)
 
+      setSubcategories(subcategoriesData);
       setProducts(productsData.productList);
     } catch (err) {
       setError(err.message);
@@ -64,18 +55,18 @@ const CategoriesPage = () => {
     }
   };
 
-  // Handle subcategory click
   const handleSubcategoryClick = async (subcategoryName) => {
     setLoading(true);
     setError(null);
 
     try {
-      const response = await fetch(summaryApi.getProductsBySubcategory(selectedCategory, subcategoryName).url);
+      const response = await fetch(
+        summaryApi.getProductsBySubcategory(selectedCategory, subcategoryName).url
+      );
       if (!response.ok) {
         throw new Error("Failed to fetch subcategory products");
       }
       const data = await response.json();
-
       setProducts(data.productList);
     } catch (err) {
       setError(err.message);
@@ -84,78 +75,113 @@ const CategoriesPage = () => {
     }
   };
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p className="text-red-500">Error: {error}</p>;
-
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4">Categories</h2>
-      <ul className="space-y-2">
-        {categories.length > 0 ? (
-          categories.map((category) => (
-            <li
-              key={category.name}
-              className="cursor-pointer bg-gray-100 p-3 rounded hover:bg-gray-200"
-              onClick={() => handleCategoryClick(category.name)}
-            >
-              {category.name}
-            </li>
-          ))
-        ) : (
-          <p>No categories found.</p>
-        )}
-      </ul>
-
-      {selectedCategory && (
-        <div className="mt-6">
-          <h3 className="text-xl font-bold mb-2">Subcategories</h3>
-          <ul className="space-y-2">
-            {subcategories.length > 0 ? (
-              subcategories.map((subcategory) => (
-                <li
-                  key={subcategory.name}
-                  className="cursor-pointer bg-blue-100 p-2 rounded hover:bg-blue-200"
-                  onClick={() => handleSubcategoryClick(subcategory.name)}
+    <div className="p-6 max-w-7xl mx-auto bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="bg-white rounded-lg shadow-lg p-6">
+        <h2 className="text-3xl font-bold mb-6 text-gray-800">Categories</h2>
+        
+        {/* Horizontal scrolling categories */}
+        <div className="relative mb-8">
+          <div className="overflow-x-auto pb-4">
+            <div className="flex space-x-4 min-w-max px-4">
+              {categories.map((category) => (
+                <button
+                  key={category.name}
+                  onClick={() => handleCategoryClick(category.name)}
+                  className={`
+                    px-6 py-3 rounded-full transition-all duration-200 transform hover:scale-105
+                    ${selectedCategory === category.name 
+                      ? 'bg-blue-600 text-white shadow-lg' 
+                      : 'bg-gray-100 text-gray-700 hover:bg-blue-50 shadow'}
+                  `}
                 >
-                  {subcategory.name}
-                </li>
-              ))
-            ) : (
-              <p>No subcategories found.</p>
-            )}
-          </ul>
+                  {category.name}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
-      )}
 
-{products?.length > 0 ? (
-  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-    {products.map((product, index) => (
-      <div key={index} className="bg-white shadow-md rounded-lg p-4 border hover:shadow-lg transition-shadow">
-        <img
-          src={product.mainImage?.url}
-          alt={product.name}
-          className="w-full h-48 object-cover rounded-md"
-        />
-        <h3 className="mt-3 text-lg font-semibold text-gray-900">{product.name}</h3>
-        <p className="text-gray-700 text-sm mt-2">
-          <span className="font-bold text-green-600">{product.currencyRaw}</span> {product.price} 
-          <span className="line-through text-gray-500 ml-2 text-sm">({product.regularPrice})</span>
-        </p>
-        <a
-          href={product.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block mt-3 text-center bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition-colors"
-        >
-          View on Amazon
-        </a>
+        {/* Horizontal scrolling subcategories */}
+        {selectedCategory && (
+          <div className="relative mb-8">
+            <div className="overflow-x-auto pb-4">
+              <div className="flex space-x-4 min-w-max px-4">
+                {subcategories.map((subcategory) => (
+                  <button
+                    key={subcategory.name}
+                    onClick={() => handleSubcategoryClick(subcategory.name)}
+                    className="px-4 py-2 rounded-full bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors duration-200"
+                  >
+                    {subcategory.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Loading state */}
+        {loading && (
+          <div className="flex items-center justify-center p-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          </div>
+        )}
+
+        {/* Error state */}
+        {error && (
+          <div className="text-center p-4 text-red-600 bg-red-50 rounded-lg">
+            {error}
+          </div>
+        )}
+
+        {/* Products grid */}
+        {!loading && products?.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {products.map((product, index) => (
+              <div key={index} className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-200 overflow-hidden">
+                <div className="p-4">
+                  <div className="relative overflow-hidden rounded-lg mb-4">
+                    <img
+                      src={product.mainImage?.url}
+                      alt={product.name}
+                      className="w-full h-48 object-cover transform hover:scale-105 transition-transform duration-200"
+                    />
+                  </div>
+                  <h3 className="font-semibold text-gray-900 line-clamp-2 mb-2">
+                    {product.name}
+                  </h3>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-lg font-bold text-green-600">
+                        {product.currencyRaw}
+                        {product.price}
+                      </span>
+                      <span className="ml-2 text-sm text-gray-500 line-through">
+                        {product.regularPrice}
+                      </span>
+                    </div>
+                  </div>
+                  <a
+                    href={product.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-4 block w-full text-center py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
+                  >
+                    View on Amazon
+                  </a>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {!loading && products?.length === 0 && (
+          <p className="text-center text-gray-600 p-8">
+            No products found. Try another category.
+          </p>
+        )}
       </div>
-    ))}
-  </div>
-) : (
-  <p className="text-center text-gray-600 mt-6">No products found. Try another keyword.</p>
-)}
-
     </div>
   );
 };
