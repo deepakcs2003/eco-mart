@@ -33,9 +33,7 @@ exports.getCategories = async (req, res) => {
     res.status(200).json(categories);
   } catch (error) {
     console.error("Error fetching categories:", error);
-    res.status(500).json({ 
-      message: "Categories not found", 
-      error });
+    res.status(500).json({ message: "Categories not found", error });
   }
 };
 
@@ -56,10 +54,11 @@ exports.getSubcategories = async (req, res) => {
   }
 };
 
-// Fetch products dynamically using category & subcategory
+// Fetch products dynamically using category, subcategory, and company
 exports.getProductsBySubcategory = async (req, res) => {
   try {
     const { categoryName, subcategoryName } = req.params;
+    const { company } = req.query;
 
     // Construct the search query dynamically
     let searchQuery = `eco-friendly ${categoryName}`;
@@ -68,43 +67,54 @@ exports.getProductsBySubcategory = async (req, res) => {
     }
     searchQuery = searchQuery.trim();
 
-    // Construct Flipkart search URL
-    const flipkartSearchUrl = `https://www.flipkart.com/search?q=${encodeURIComponent(searchQuery)}`;
+    // Get the appropriate URL based on the selected company
+    const getSearchUrl = (company, query) => {
+      switch (company) {
+        case 'walmart':
+          return `https://www.walmart.com/search?q=${encodeURIComponent(query)}`;
+        case 'amazon':
+          return `https://www.amazon.com/s?k=${encodeURIComponent(query)}`;
+        case 'ebay':
+          return `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(query)}`;
+        case 'flipkart':
+        default:
+          return `https://www.flipkart.com/search?q=${encodeURIComponent(query)}`;
+      }
+    };
 
-    // Send request to Zyte API (REMOVE httpResponseBody)
+    const searchUrl = getSearchUrl(company, searchQuery);
+
+    // Send request to Zyte API
     const response = await axios.post(
-                "https://api.zyte.com/v1/extract",
-                {
-                    "url": flipkartSearchUrl,
-                    "productList": true,
-                    "httpResponseBody": true, // Ensure response body is included
-                    "productListOptions": { "extractFrom": "httpResponseBody" }
-                },
-                {
-                    auth: { username: process.env.ZYTE_API_KEY } // Secure API key
-                }
-            );
-    
-        // ✅ Ensure `httpResponseBody` exists before using Buffer
-        const httpResponseBody = response.data.httpResponseBody
-            ? Buffer.from(response.data.httpResponseBody, "base64").toString()
-            : "No response body available";
+      "https://api.zyte.com/v1/extract",
+      {
+        "url": searchUrl,
+        "productList": true,
+        "httpResponseBody": true,
+        "productListOptions": { "extractFrom": "httpResponseBody" }
+      },
+      {
+        auth: { username: process.env.ZYTE_API_KEY }
+      }
+    );
 
-        // ✅ Correctly extract product list
-        const productList = response.data.productList?.products || "No product data available";
+    const httpResponseBody = response.data.httpResponseBody
+      ? Buffer.from(response.data.httpResponseBody, "base64").toString()
+      : "No response body available";
 
+    const productList = response.data.productList?.products || "No product data available";
 
-        res.json({
-            success: true,
-            searchQuery, // Shows the final search term used
-            productList,
-            rawHtml: httpResponseBody, // Optional: Remove if not needed
-        });
-    } catch (error) {
-        console.error("Scraping failed:", error.message);
-        res.status(500).json({
-            success: false,
-            error: error.response?.data || error.message,
-        });
-    }
+    res.json({
+      success: true,
+      searchQuery,
+      productList,
+      rawHtml: httpResponseBody,
+    });
+  } catch (error) {
+    console.error("Scraping failed:", error.message);
+    res.status(500).json({
+      success: false,
+      error: error.response?.data || error.message,
+    });
+  }
 };
