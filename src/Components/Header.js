@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Menu, Search, User, Heart, X } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useRef, useEffect } from "react";
+import { Menu, Search, X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -25,13 +25,11 @@ const Header = () => {
         setIsSearchOpen(false);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleSearchChange = (event) => {
-    setSearchTerm(event.target.value);
-  };
+  const handleSearchChange = (event) => setSearchTerm(event.target.value);
 
   const handleSearch = () => {
     if (searchTerm.trim()) {
@@ -46,7 +44,7 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-teal-700 text-white shadow-lg">
+    <header className="fixed top-0 left-0 w-full bg-teal-700 text-white shadow-lg z-50">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -65,7 +63,10 @@ const Header = () => {
                 onKeyDown={handleKeyDown}
                 className="w-64 px-4 py-1 rounded-full text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
               />
-              <button onClick={handleSearch} className="ml-2 bg-green-500 text-white px-3 py-1 rounded-full hover:bg-green-600">
+              <button
+                onClick={handleSearch}
+                className="ml-2 bg-green-500 text-white px-3 py-1 rounded-full hover:bg-green-600"
+              >
                 <Search className="h-4 w-4" />
               </button>
             </div>
@@ -73,11 +74,21 @@ const Header = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-8">
-            <a href="/about" className="text-white hover:text-teal-200">About</a>
-            <a href="/contact" className="text-white hover:text-teal-200">Contact</a>
-            <a href="/profile" className="text-white hover:text-teal-200">Profile</a>
-            <a href="/wishlist" className="text-white hover:text-teal-200">Wishlist</a>
-            <a href="/categories" className="text-white hover:text-teal-200">Categories</a>
+            <a href="/about" className="hover:text-teal-200">
+              About
+            </a>
+            <a href="/contact" className="hover:text-teal-200">
+              Contact
+            </a>
+            <a href="/profile" className="hover:text-teal-200">
+              Profile
+            </a>
+            <a href="/wishlist" className="hover:text-teal-200">
+              Wishlist
+            </a>
+            <a href="/categories" className="hover:text-teal-200">
+              Categories
+            </a>
           </nav>
 
           {/* Mobile Menu Button */}
@@ -103,7 +114,10 @@ const Header = () => {
                 onKeyDown={handleKeyDown}
                 className="w-full px-4 py-2 rounded-lg text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
               />
-              <button onClick={handleSearch} className="ml-2 bg-green-500 text-white px-3 py-1 rounded-lg hover:bg-green-600">
+              <button
+                onClick={handleSearch}
+                className="ml-2 bg-green-500 text-white px-3 py-1 rounded-lg hover:bg-green-600"
+              >
                 <Search className="h-4 w-4" />
               </button>
             </div>
@@ -113,10 +127,18 @@ const Header = () => {
         {/* Mobile Navigation Menu */}
         {isMenuOpen && (
           <nav className="md:hidden flex flex-col space-y-2 pb-4">
-            <a href="/about" className="px-4 py-2 text-sm hover:bg-teal-600 rounded-lg">About</a>
-            <a href="/contact" className="px-4 py-2 text-sm hover:bg-teal-600 rounded-lg">Contact</a>
-            <a href="/profile" className="px-4 py-2 text-sm hover:bg-teal-600 rounded-lg">Profile</a>
-            <a href="/wishlist" className="px-4 py-2 text-sm hover:bg-teal-600 rounded-lg">Wishlist</a>
+            <a href="/about" className="px-4 py-2 text-sm hover:bg-teal-600 rounded-lg">
+              About
+            </a>
+            <a href="/contact" className="px-4 py-2 text-sm hover:bg-teal-600 rounded-lg">
+              Contact
+            </a>
+            <a href="/profile" className="px-4 py-2 text-sm hover:bg-teal-600 rounded-lg">
+              Profile
+            </a>
+            <a href="/wishlist" className="px-4 py-2 text-sm hover:bg-teal-600 rounded-lg">
+              Wishlist
+            </a>
           </nav>
         )}
       </div>

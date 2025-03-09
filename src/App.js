@@ -11,9 +11,8 @@ function App() {
     <div className="flex flex-col min-h-screen">
     <ToastContainer />
     <Header />
-    <main className="flex-grow overflow-hidden">
+    <main className="flex-grow overflow-hidden pt-14">
       <Outlet />
-      <CategoriesPage/>
     </main>
     <Footer/>
   </div>

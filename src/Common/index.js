@@ -21,5 +21,10 @@ const summaryApi={
         url: `${backendDomain}/api/v1/categories/${category}/${subcategory}/products`,
         method: "get",
     }),
+    productDetail: {
+        url: `${backendDomain}/api/v1/scrape/product-detail`,
+        method: "POST",
+    },
+    
 }
 export default summaryApi
