@@ -123,7 +123,7 @@ const Header = () => {
                 
                 {/* Show Admin link if user has admin role */}
                 {isAdmin && (
-                  <a href="/admin" className="flex items-center space-x-1 bg-purple-600 px-3 py-1 rounded-full hover:bg-purple-700">
+                  <a href="/adminBoard" className="flex items-center space-x-1 bg-purple-600 px-3 py-1 rounded-full hover:bg-purple-700">
                     <Shield className="h-4 w-4" />
                     <span>Admin</span>
                   </a>

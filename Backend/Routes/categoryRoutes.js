@@ -9,7 +9,7 @@ const {
   updateCategory,
   deleteCategory,
 } = require("../Controller/categoryController");
-const { isAdmin } = require("../Middleware/authMiddleware");
+const { isAdmin } = require("../middleware/authMiddleware");
 
 // Admin protected route to get all users
 router.get("/allUsers", isAdmin,getAllUsers);
