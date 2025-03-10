@@ -1,3 +1,4 @@
+
 const local="http://localhost:5000"
 const backendDomain=local;
 const summaryApi={
@@ -25,6 +26,19 @@ const summaryApi={
         url: `${backendDomain}/api/v1/scrape/product-detail`,
         method: "POST",
     },
+    AddToWishList: {
+        url: `${backendDomain}/api/v1/wishlist/AddToWishList`,
+        method: "POST",
+    },
+    DeteleToWishList:{
+        url: `${backendDomain}/api/v1/wishlist/DeteleToWishList`,
+        method: "DELETE",
+    },
+    GetAllWishList:{
+        url: `${backendDomain}/api/v1/wishlist/GetAllWishList`,
+        method: "get",
+    }
+    
     
 }
 export default summaryApi

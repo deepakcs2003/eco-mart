@@ -1,21 +1,22 @@
-import logo from './logo.svg';
-import './App.css';
-import { ToastContainer } from 'react-toastify';
-import Header from './Components/Header';
-import Footer from './Components/Footer';
-import { Outlet } from 'react-router-dom';
-import CategoriesPage from './Pages/CategoriesPage';
+import React from "react";
+import { ToastContainer } from "react-toastify";
+import Header from "./Components/Header";
+import Footer from "./Components/Footer";
+import { Outlet } from "react-router-dom";
+import { WishlistProvider } from "./Context/WishlistContext";
 
 function App() {
   return (
-    <div className="flex flex-col min-h-screen">
-    <ToastContainer />
-    <Header />
-    <main className="flex-grow overflow-hidden pt-14">
-      <Outlet />
-    </main>
-    <Footer/>
-  </div>
+    <WishlistProvider>
+      <div className="flex flex-col min-h-screen">
+        <ToastContainer />
+        <Header />
+        <main className="flex-grow overflow-hidden pt-14">
+          <Outlet />
+        </main>
+        <Footer />
+      </div>
+    </WishlistProvider>
   );
 }
 

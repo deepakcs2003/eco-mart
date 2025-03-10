@@ -6,6 +6,7 @@ import ContactPage from "../Pages/ContactPage";
 import ProfilePage from "../Pages/ProfilePage";
 import CategoriesPage from "../Pages/CategoriesPage";
 import { Product } from "../Pages/Product";
+import Wishlist from "../Pages/Wishlist";
 
 const router = createBrowserRouter([
   {
@@ -17,7 +18,8 @@ const router = createBrowserRouter([
       { path: "contact", element: <ContactPage /> },
       { path: "profile", element: <ProfilePage /> },
       { path: "categories", element: <CategoriesPage /> },
-      { path: "product", element: <Product />,}
+      { path: "product", element: <Product />,},
+      { path: "wishlist", element: <Wishlist />,}
     ],
   },
 ]);
