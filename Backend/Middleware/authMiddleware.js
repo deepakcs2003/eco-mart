@@ -5,10 +5,8 @@ const authToken = async (req, res, next) => {
   try {
     // Retrieve token from cookies or Authorization header
     const token = req.cookies?.token || req.headers['authorization']?.split(' ')[1];
-    
 
     if (!token) {
-      // If no token is provided, respond with unauthorized status
       return res.status(401).json({
         success: false,
         message: "Token is not provided"
@@ -25,17 +23,15 @@ const authToken = async (req, res, next) => {
       }
 
       // Attach decoded token data to req.user
-      // console.log("decoded data",decoded);
       req.user = {
         id: decoded.id,
         name: decoded.name,
         email: decoded.email,
-        role: decoded.role,  // Attach the role from the token
+        role: decoded.role, // Attach the role from the token
       };
       next();
     });
   } catch (err) {
-    // Catch any unexpected errors and respond with unauthorized status
     console.error("Auth Error: ", err);
     return res.status(401).json({
       success: false,
@@ -44,7 +40,7 @@ const authToken = async (req, res, next) => {
   }
 };
 
-
+// Middleware to check if the user is an admin
 const isAdmin = (req, res, next) => {
   if (req.user && req.user.role === "admin") {
     next();
@@ -56,4 +52,16 @@ const isAdmin = (req, res, next) => {
   }
 };
 
-module.exports = {authToken,isAdmin};
+// Middleware to check if the user is a normal user
+const isUser = (req, res, next) => {
+  if (req.user && req.user.role === "user") {
+    next();
+  } else {
+    return res.status(403).json({
+      success: false,
+      message: "Access denied. Users only.",
+    });
+  }
+};
+
+module.exports = { authToken, isAdmin, isUser };
