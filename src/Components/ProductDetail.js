@@ -1,5 +1,5 @@
 // File: src/components/ProductDetail/index.jsx
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import summaryApi from '../Common';
 import LoadingSpinner from './LoadingSpinner';
 import ErrorMessage from './ErrorMessage';
@@ -8,6 +8,7 @@ import ProductImages from './ProductDetailComponent/ProductImages';
 import ProductInfo from './ProductDetailComponent/ProductInfo';
 import ProductListView from './ProductDetailComponent/ProductListView';
 import ProductTabs from './ProductDetailComponent/ProductTabs';
+import { WishlistContext } from '../Context/WishlistContext';
 
 const COLORS = {
   primary: '#228B22',       // Forest Green
@@ -15,12 +16,12 @@ const COLORS = {
   background: '#A8B5A2',    // Sage Green
   accent1: '#317873',       // Deep Teal
   accent2: '#87CEEB',       // Sky Blue
-  neutral1: '#8B5A2B',      // Earthy Brown
+  neutral1: 'black',      // Earthy Brown
   neutral2: '#F5DEB3',      // Warm Beige
   error: '#A52A2A',         // Rustic Red
 };
 
-const ProductDetail = ({ url }) => {
+const ProductDetail = ({ url,source }) => {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -29,7 +30,8 @@ const ProductDetail = ({ url }) => {
   const [viewMode, setViewMode] = useState(window.innerWidth < 768 ? 'list' : 'grid');
   const [savedProducts, setSavedProducts] = useState([]);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-
+  const {addToWishlist, removeFromWishlist, fetchAllWishlistProducts} = useContext(WishlistContext);
+  
   useEffect(() => {
     if (!url) return;
 
@@ -88,33 +90,40 @@ const ProductDetail = ({ url }) => {
     setActiveTab(tab);
   };
 
-  const handleSaveProduct = () => {
+  const handleSaveProduct = async () => {
     if (!product) return;
-    
+  
     const productInfo = {
-      id: product.id || Date.now().toString(),
+      url, // Using URL as the unique identifier
+      price: product.price,
+      mainImage: product.images?.length > 0 ? product.images[0].url : "/api/placeholder/400/400",
       name: product.name,
-      price: `${product.currencyRaw}${product.price}`,
-      imageUrl: product.images && product.images.length > 0 
-        ? product.images[0].url 
-        : "/api/placeholder/400/400",
-      url: product.url
+      source: source
     };
-    
-    // Check if product is already saved
-    const isProductSaved = savedProducts.some(item => item.id === productInfo.id);
-    
-    if (isProductSaved) {
-      // Remove from saved list if already there
-      setSavedProducts(savedProducts.filter(item => item.id !== productInfo.id));
-    } else {
-      // Add to saved list
-      setSavedProducts([...savedProducts, productInfo]);
+  
+    // Determine if the product is already saved
+    const isAlreadySaved = savedProducts.some(item => item.url === productInfo.url);
+  
+    try {
+      if (isAlreadySaved) {
+        await removeFromWishlist(productInfo.url);
+        setSavedProducts(prev => prev.filter(item => item.url !== productInfo.url));
+      } else {
+        await addToWishlist(productInfo);
+        setSavedProducts(prev => [...prev, productInfo]);
+      }
+  
+      // Refresh the wishlist after updating
+      await fetchAllWishlistProducts();
+    } catch (error) {
+      console.error("Error handling wishlist:", error);
     }
   };
-
-  const isProductSaved = (productId) => {
-    return savedProducts.some(item => item.id === (product?.id || Date.now().toString()));
+  
+  
+  
+  const isProductSaved = (url) => {
+    return savedProducts.some(item => item.id === (url));
   };
 
   if (loading) return <LoadingSpinner colors={COLORS} />;

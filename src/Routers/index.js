@@ -9,6 +9,7 @@ import { Product } from "../Pages/Product";
 import CreateCategory from "../Components/AdminDashboard/CreateCategory";
 import AllUsers from "../Components/AdminDashboard/AllUsers";
 import Dashboard from "../Components/AdminDashboard/Dashboard";
+import Wishlist from "../Pages/Wishlist";
 
 const router = createBrowserRouter([
   {
@@ -23,7 +24,8 @@ const router = createBrowserRouter([
       { path: "product", element: <Product />,},
       { path: "createCategory",element:<CreateCategory/>},
       { path: "allUsers" , element:<AllUsers/>},
-      { path: "adminBoard", element:<Dashboard/>}
+      { path: "adminBoard", element:<Dashboard/>},
+      { path: "wishlist", element: <Wishlist />,}
     ],
   },
 ]);
