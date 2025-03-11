@@ -19,7 +19,7 @@ const ProductInfo = ({ product, handleSaveProduct, isProductSaved, colors }) => 
   const productUrl = product.url || '#';
 
   return (
-    <div className="w-full md:w-1/2 p-4 md:p-6 flex flex-col">
+    <div className="w-full md:w-full p-4 md:p-6 flex flex-col">
       {/* Brand Name */}
       {brandName && (
         <div 

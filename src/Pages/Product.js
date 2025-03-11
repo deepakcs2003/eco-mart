@@ -6,6 +6,10 @@ import DraggableBackButton from "../Components/DraggableBackButton";
 import { WishlistContext } from "../Context/WishlistContext";
 import ProductCard from "../Components/ProductCard";
 import ProductFilters from "../Components/ProductFilters";
+import LoadingSpinner from "../Components/LoadingSpinner";
+
+// Cache expiration time in milliseconds (e.g., 1 hour)
+const CACHE_EXPIRATION = 60 * 60 * 1000;
 
 export const Product = () => {
   const [productData, setProductData] = useState([]);
@@ -30,12 +34,63 @@ export const Product = () => {
     ? [...new Set(productData.map(product => product.source))]
     : [];
 
+  // Helper functions for localStorage management
+  const getCacheKey = (query) => `product_cache_${query}`;
+  
+  const getFromCache = (query) => {
+    try {
+      const cacheKey = getCacheKey(query);
+      const cachedData = localStorage.getItem(cacheKey);
+      
+      if (!cachedData) return null;
+      
+      const { data, timestamp } = JSON.parse(cachedData);
+      
+      // Check if cache has expired
+      if (Date.now() - timestamp > CACHE_EXPIRATION) {
+        localStorage.removeItem(cacheKey);
+        return null;
+      }
+      
+      return data;
+    } catch (error) {
+      console.error("Error reading from cache:", error);
+      return null;
+    }
+  };
+  
+  const saveToCache = (query, data) => {
+    try {
+      const cacheKey = getCacheKey(query);
+      const cacheData = {
+        data,
+        timestamp: Date.now()
+      };
+      localStorage.setItem(cacheKey, JSON.stringify(cacheData));
+    } catch (error) {
+      console.error("Error saving to cache:", error);
+    }
+  };
+
+  // Load product data - with caching strategy
   useEffect(() => {
     const fetchProducts = async () => {
       const query = getSearchQuery();
-      console.log("Searching for:", query);
+      
       if (!query) return;
-
+      
+      // Try to get data from cache first
+      const cachedData = getFromCache(query);
+      
+      if (cachedData && cachedData.length > 0) {
+        console.log("Using cached data for:", query);
+        setProductData(cachedData);
+        setLoading(false);
+        return;
+      }
+      
+      // If not in cache or expired, fetch from API
+      console.log("Fetching fresh data for:", query);
       setLoading(true);
       setProductData([]); // Clear previous results
 
@@ -43,6 +98,8 @@ export const Product = () => {
         const response = await fetch(`${summaryApi.scrape_product.url}?search=${query}`);
         const reader = response.body.getReader();
         const decoder = new TextDecoder("utf-8");
+        
+        let accumulatedData = [];
 
         while (true) {
           const { done, value } = await reader.read();
@@ -57,11 +114,17 @@ export const Product = () => {
             }
 
             if (jsonData.data && jsonData.data.length > 0) {
-              setProductData(prevData => [...prevData, ...jsonData.data]);
+              accumulatedData = [...accumulatedData, ...jsonData.data];
+              setProductData(accumulatedData);
             }
           } catch (error) {
             console.error("Error parsing JSON chunk:", error);
           }
+        }
+        
+        // Save to cache when all data is received
+        if (accumulatedData.length > 0) {
+          saveToCache(query, accumulatedData);
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -69,8 +132,50 @@ export const Product = () => {
       }
     };
 
+    // Load user preferences from localStorage
+    const loadUserPreferences = () => {
+      try {
+        // Load currency preference
+        const savedCurrency = localStorage.getItem('preferred_currency');
+        if (savedCurrency) {
+          setCurrencyType(savedCurrency);
+        }
+        
+        // Load platforms preference
+        const savedPlatforms = localStorage.getItem('selected_platforms');
+        if (savedPlatforms) {
+          setSelectedPlatforms(JSON.parse(savedPlatforms));
+        }
+        
+        // Load wishlist
+        fetchAllWishlistProducts().then(data => {
+          if (data) setWishlist(data);
+        });
+      } catch (error) {
+        console.error("Error loading user preferences:", error);
+      }
+    };
+
+    loadUserPreferences();
     fetchProducts();
-  }, [location.search]);
+    
+    // Save initial scroll position when component mounts
+    const savedListPosition = localStorage.getItem('listScrollPosition');
+    if (savedListPosition && !selectedProductUrl) {
+      setTimeout(() => {
+        window.scrollTo(0, parseInt(savedListPosition, 10));
+      }, 100);
+    }
+  }, [location.search]); // Only re-run when search query changes
+
+  // Save user preferences when they change
+  useEffect(() => {
+    localStorage.setItem('preferred_currency', currencyType);
+  }, [currencyType]);
+  
+  useEffect(() => {
+    localStorage.setItem('selected_platforms', JSON.stringify(selectedPlatforms));
+  }, [selectedPlatforms]);
 
   // Apply filters when productData, selectedPlatforms or priceRange changes
   useEffect(() => {
@@ -193,18 +298,17 @@ export const Product = () => {
   }, [selectedProductUrl]);
   
   // Main render
-  // Main render
-if (selectedProductUrl) {
-  // Find the selected product to get its source
-  const selectedProduct = productData.find(product => product.url === selectedProductUrl);
-  
-  return (
-    <div className="min-h-screen bg-[#A8B5A2] font-sans">
-      <DraggableBackButton onBackClick={handleBackToProducts} />
-      <ProductDetail url={selectedProductUrl} source={selectedProduct?.source} />
-    </div>
-  );
-}
+  if (selectedProductUrl) {
+    // Find the selected product to get its source
+    const selectedProduct = productData.find(product => product.url === selectedProductUrl);
+    
+    return (
+      <div className="min-h-screen bg-[#A8B5A2] font-sans">
+        <DraggableBackButton onBackClick={handleBackToProducts} />
+        <ProductDetail url={selectedProductUrl} source={selectedProduct?.source} />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#A8B5A2] font-sans">
@@ -234,7 +338,7 @@ if (selectedProductUrl) {
                 <span className="font-semibold">{filteredProducts.length}</span> products found
               </div>
 
-              {filteredProducts.length > 0 ? (
+            {filteredProducts.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
                   {filteredProducts.map((product, index) => (
                     <ProductCard
@@ -249,14 +353,8 @@ if (selectedProductUrl) {
                   ))}
                 </div>
               ) : (
-                <div className="bg-white rounded-lg p-8 text-center">
-                  <p className="text-[#8B5A2B] text-lg mb-4">No products found matching your filters.</p>
-                  <button
-                    onClick={resetFilters}
-                    className="bg-[#317873] text-white px-4 py-2 rounded hover:bg-[#228B22] transition-colors"
-                  >
-                    Reset Filters
-                  </button>
+                <div className="rounded-lg p-8 text-center">
+                  <LoadingSpinner />
                 </div>
               )}
             </>

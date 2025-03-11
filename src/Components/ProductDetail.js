@@ -1,12 +1,9 @@
-// File: src/components/ProductDetail/index.jsx
 import React, { useContext, useEffect, useState } from 'react';
 import summaryApi from '../Common';
 import LoadingSpinner from './LoadingSpinner';
 import ErrorMessage from './ErrorMessage';
-import ProductHeader from './ProductDetailComponent/ProductHeader';
 import ProductImages from './ProductDetailComponent/ProductImages';
 import ProductInfo from './ProductDetailComponent/ProductInfo';
-import ProductListView from './ProductDetailComponent/ProductListView';
 import ProductTabs from './ProductDetailComponent/ProductTabs';
 import { WishlistContext } from '../Context/WishlistContext';
 import ProductReviews from './ProductDetailComponent/ProductReviews';
@@ -29,14 +26,29 @@ const ProductDetail = ({ url, source }) => {
   const [error, setError] = useState(null);
   const [activeImage, setActiveImage] = useState(0);
   const [activeTab, setActiveTab] = useState('description');
-  const [viewMode, setViewMode] = useState(window.innerWidth < 768 ? 'list' : 'grid');
   const [savedProducts, setSavedProducts] = useState([]);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const { addToWishlist, removeFromWishlist, fetchAllWishlistProducts, wishlistItems } = useContext(WishlistContext);
 
   const [reviews, setReviews] = useState([]);
   const [reviewLoading, setReviewLoading] = useState(true);
-  console.log(source)
+
+  // Handle responsive layout detection
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    // Set initial state
+    handleResize();
+
+    // Add listener for window resize
+    window.addEventListener('resize', handleResize);
+
+    // Cleanup
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   // Fetch reviews when url and source change
   useEffect(() => {
     const fetchReviews = async () => {
@@ -55,7 +67,6 @@ const ProductDetail = ({ url, source }) => {
         }
 
         const data = await response.json();
-        console.log(data)
         setReviews(data || []);
       } catch (err) {
         console.error("Error fetching reviews:", err.message);
@@ -71,57 +82,33 @@ const ProductDetail = ({ url, source }) => {
   }, [url, source]);
 
   // Fetch product details
-  useEffect(() => {
-    if (!url) return;
-
-    const fetchProduct = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch(summaryApi.productDetail.url, {
-          method: summaryApi.productDetail.method,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ url }),
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch product details');
-        }
-
-        const data = await response.json();
-        setProduct(data.product);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
+  const fetchProduct = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(summaryApi.productDetail.url, {
+        method: summaryApi.productDetail.method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ url }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch product details');
       }
-    };
 
+      const data = await response.json();
+      setProduct(data.product);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  useEffect(() => {
     fetchProduct();
   }, [url]);
-
-  // Handle responsive layout
-  useEffect(() => {
-    const handleResize = () => {
-      const mobile = window.innerWidth < 768;
-      setIsMobile(mobile);
-
-      // Only auto-switch view mode when changing from desktop to mobile
-      if (mobile && viewMode === 'grid') {
-        setViewMode('list');
-      }
-    };
-
-    // Set initial state
-    handleResize();
-
-    // Add listener for window resize
-    window.addEventListener('resize', handleResize);
-
-    // Cleanup
-    return () => window.removeEventListener('resize', handleResize);
-  }, [viewMode]);
 
   // Fetch saved products on component mount
   useEffect(() => {
@@ -144,7 +131,7 @@ const ProductDetail = ({ url, source }) => {
   const handleTabChange = (tab) => {
     setActiveTab(tab);
   };
-
+console.log(product)
   const handleSaveProduct = async () => {
     if (!product) return;
 
@@ -180,77 +167,18 @@ const ProductDetail = ({ url, source }) => {
       (wishlistItems && wishlistItems.some(item => item.url === productUrl));
   };
 
-  if (loading && !product) return <LoadingSpinner colors={COLORS} />;
+  if (loading && !product) return <LoadingSpinner/>;
   if (error) return <ErrorMessage error={error} colors={COLORS} />;
   if (!product) return <ErrorMessage message="No product data available" colors={COLORS} />;
 
-  // Render reviews section with improved UI
-  const renderReviews = () => {
-    if (!reviews || reviews.length === 0) {
-      return (
-        <div className="text-center p-4 rounded-lg bg-opacity-70" style={{ backgroundColor: COLORS.neutral2, color: COLORS.neutral1 }}>
-          <p className="text-lg">No reviews available for this product yet.</p>
-        </div>
-      );
-    }
-
-    return (
-      <div className="space-y-4 p-2">
-        <div className="mb-4">
-          <h3 className="text-xl font-bold" style={{ color: COLORS.primary }}>
-            Customer Reviews ({reviews.length})
-          </h3>
-          <div className="h-1 w-20 mt-1" style={{ backgroundColor: COLORS.primary }}></div>
-        </div>
-
-        {reviews.map((review, index) => (
-          <div
-            key={index}
-            className="p-4 rounded-lg shadow-md transition-all hover:shadow-lg"
-            style={{ backgroundColor: COLORS.neutral2, borderLeft: `4px solid ${COLORS.primary}` }}
-          >
-            <div className="flex items-center justify-between mb-3">
-              <span className="font-semibold text-base" style={{ color: COLORS.neutral1 }}>
-                {review.author || 'Anonymous User'}
-              </span>
-              <div className="flex items-center gap-1">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <span key={star} className="text-lg" style={{ color: star <= (review.rating || 0) ? COLORS.secondary : '#D3D3D3' }}>
-                    ★
-                  </span>
-                ))}
-                <span className="ml-2 font-medium" style={{ color: COLORS.neutral1 }}>
-                  {review.rating || 0}/5
-                </span>
-              </div>
-            </div>
-            <p className="text-sm mb-2" style={{ color: COLORS.neutral1 }}>
-              {review.content}
-            </p>
-            {review.date && (
-              <p className="text-xs italic" style={{ color: COLORS.neutral1, opacity: 0.8 }}>
-                Posted on {new Date(review.date).toLocaleDateString()}
-              </p>
-            )}
-          </div>
-        ))}
-      </div>
-    );
-  };
-
   return (
     <div className="p-3 sm:p-5 md:p-8 mx-auto rounded-lg shadow-lg overflow-hidden max-w-screen-xl">
-      <ProductHeader
-        product={product}
-        viewMode={viewMode}
-        setViewMode={setViewMode}
-        colors={COLORS}
-        isMobile={isMobile}
-      />
-
-      {viewMode === 'grid' ? (
-        <>
-          <div className="flex flex-col md:flex-row gap-4">
+      {/* Responsive layout with consistent content across mobile and desktop */}
+      <div className="mt-4">
+        {isMobile ? (
+          // Mobile view - content stacked vertically
+          <div className="flex flex-col gap-4">
+            {/* Product Images - Mobile Layout */}
             <ProductImages
               product={product}
               activeImage={activeImage}
@@ -258,58 +186,89 @@ const ProductDetail = ({ url, source }) => {
               colors={COLORS}
             />
 
+            {/* Product Information - Mobile Layout */}
             <ProductInfo
               product={product}
               handleSaveProduct={handleSaveProduct}
               isProductSaved={isProductSaved(url)}
               colors={COLORS}
             />
-          </div>
-          {
-            reviewLoading ? (
-              <ReviewsSkeleton />
-            ) : (
-              <ProductReviews reviews={reviews} colors={COLORS} />
-            )
-          }
 
-          <div className="mt-6">
-            <ProductTabs
-              product={product}
-              activeTab={activeTab}
-              handleTabChange={handleTabChange}
-              colors={COLORS}
-              isMobile={isMobile}
-              reviews={reviews}
-              renderReviews={renderReviews}
-            />
-          </div>
-        </>
-      ) : (
-        <>
-          <ProductListView
-            product={product}
-            activeImage={activeImage}
-            handleSaveProduct={handleSaveProduct}
-            isProductSaved={isProductSaved(url)}
-            source={source}
-            url={url}
-            colors={COLORS}
-          />
+            {/* Product Tabs - Mobile Layout */}
+            <div className="mt-4">
+              <ProductTabs
+                product={product}
+                activeTab={activeTab}
+                handleTabChange={handleTabChange}
+                colors={COLORS}
+                isMobile={isMobile}
+                reviews={reviews}
+              />
+            </div>
 
-          {/* Improved standalone reviews section for list view */}
-          <div className="mt-6 px-2 py-4 rounded-lg" style={{ backgroundColor: 'rgba(168, 181, 162, 0.1)' }}>
-            <h3 className="text-xl font-bold mb-4 px-2" style={{ color: COLORS.primary }}>
-              Customer Reviews
-            </h3>
-            {reviewLoading ? (
-              <ReviewsSkeleton />
-            ) : (
-              <ProductReviews reviews={reviews} colors={COLORS} />
-            )}
+            {/* Reviews Section - Mobile Layout */}
+            <div className="mt-4 rounded-lg" style={{ backgroundColor: 'rgba(168, 181, 162, 0.1)' }}>
+              <h3 className="text-xl font-bold mb-4 px-2" style={{ color: COLORS.primary }}>
+                Customer Reviews
+              </h3>
+              {reviewLoading ? (
+                <ReviewsSkeleton />
+              ) : (
+                <ProductReviews reviews={reviews} colors={COLORS} />
+              )}
+            </div>
           </div>
-        </>
-      )}
+        ) : (
+          // Desktop view - content in grid/flex layout
+          <div>
+            <div className="flex flex-row gap-6">
+              {/* Product Images - Desktop Layout */}
+              <div className="w-1/2">
+                <ProductImages
+                  product={product}
+                  activeImage={activeImage}
+                  handleImageClick={handleImageClick}
+                  colors={COLORS}
+                />
+              </div>
+
+              {/* Product Information - Desktop Layout */}
+              <div className="w-1/2">
+                <ProductInfo
+                  product={product}
+                  handleSaveProduct={handleSaveProduct}
+                  isProductSaved={isProductSaved(url)}
+                  colors={COLORS}
+                />
+              </div>
+            </div>
+            
+            {/* Product Tabs - Desktop Layout */}
+            <div className="mt-6">
+              <ProductTabs
+                product={product}
+                activeTab={activeTab}
+                handleTabChange={handleTabChange}
+                colors={COLORS}
+                isMobile={isMobile}
+                reviews={reviews}
+              />
+            </div>
+
+            {/* Reviews Section - Desktop Layout */}
+            <div className="mt-6 rounded-lg" style={{ backgroundColor: 'rgba(168, 181, 162, 0.1)' }}>
+              <h3 className="text-xl font-bold mb-4 px-4" style={{ color: COLORS.primary }}>
+                Customer Reviews
+              </h3>
+              {reviewLoading ? (
+                <ReviewsSkeleton />
+              ) : (
+                <ProductReviews reviews={reviews} colors={COLORS} />
+              )}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

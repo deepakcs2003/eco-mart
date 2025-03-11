@@ -1,5 +1,7 @@
 const axios = require("axios");
 
+const MAX_RETRIES = 4; // Maximum retry attempts
+
 const productDetail = async (req, res) => {
   try {
     const { url } = req.body;
@@ -14,23 +16,44 @@ const productDetail = async (req, res) => {
 
     console.log("Fetching details for:", url);
 
-    const zyteResponse = await axios.post(
-      "https://api.zyte.com/v1/extract",
-      {
-        url,
-        product: true,
-        productOptions: { extractFrom: "httpResponseBody", ai: true },
-      },
-      {
-        auth: { username: process.env.ZYTE_API_KEY },
+    let attempt = 0;
+    let zyteResponse;
+
+    while (attempt < MAX_RETRIES) {
+      try {
+        attempt++;
+
+        zyteResponse = await axios.post(
+          "https://api.zyte.com/v1/extract",
+          {
+            url,
+            product: true,
+            productOptions: { extractFrom: "httpResponseBody", ai: true },
+          },
+          {
+            auth: { username: process.env.ZYTE_API_KEY },
+          }
+        );
+
+        console.log(`Attempt ${attempt}: Zyte API Response:`, JSON.stringify(zyteResponse.data, null, 2));
+
+        // Ensure the response contains valid product data
+        if (zyteResponse.data && zyteResponse.data.product) {
+          break; // Exit the loop if a valid response is received
+        }
+
+        console.warn(`Attempt ${attempt} failed: Invalid response from Zyte API.`);
+      } catch (error) {
+        console.error(`Attempt ${attempt} failed:`, error.response?.data || error.message);
       }
-    );
 
-    console.log("Zyte API Response:", JSON.stringify(zyteResponse.data, null, 2));
+      if (attempt < MAX_RETRIES) {
+        console.log(`Retrying... (${attempt}/${MAX_RETRIES})`);
+      }
+    }
 
-    // Ensure the response contains valid product data
-    if (!zyteResponse.data || !zyteResponse.data.product) {
-      return res.status(500).json({ error: "Invalid response from Zyte API" });
+    if (!zyteResponse || !zyteResponse.data || !zyteResponse.data.product) {
+      return res.status(500).json({ error: "Failed to fetch product details after multiple attempts" });
     }
 
     // Decode httpResponseBody only if it's available

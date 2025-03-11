@@ -364,7 +364,7 @@ const scrapeProducts = async (req, res) => {
         
 
         // Function to process URLs with a worker pool
-        async function* processUrlsWithPool(urls, concurrency = 5) {
+        async function* processUrlsWithPool(urls, concurrency = 2) {
             let index = 0;
             const activeRequests = new Set();
 
@@ -386,7 +386,7 @@ const scrapeProducts = async (req, res) => {
         }
 
         // Process URLs using a worker pool and stream results
-        for await (const result of processUrlsWithPool(urls, 5)) {
+        for await (const result of processUrlsWithPool(urls, 2)) {
             res.write(JSON.stringify({ 
                 success: true, 
                 searchQuery, 

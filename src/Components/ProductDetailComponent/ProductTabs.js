@@ -1,6 +1,5 @@
 import React from 'react';
-import { MdDescription, MdBuild, MdReviews } from 'react-icons/md';
-import ProductReviews from './ProductReviews';
+import { MdDescription, MdBuild } from 'react-icons/md';
 
 const ProductTabs = ({ product, activeTab, handleTabChange, colors}) => (
   <div className="border-t mt-8" style={{ borderColor: colors.neutral2 }}>
@@ -24,16 +23,6 @@ const ProductTabs = ({ product, activeTab, handleTabChange, colors}) => (
         onClick={() => handleTabChange('specifications')}
       >
         <MdBuild className="mr-2" /> Specifications
-      </button>
-      <button
-        className={`flex-1 font-medium py-3 px-4 flex items-center justify-center transition-colors duration-200`}
-        style={{
-          color: activeTab === 'reviews' ? colors.primary : colors.neutral1,
-          borderBottom: activeTab === 'reviews' ? `2px solid ${colors.primary}` : 'none'
-        }}
-        onClick={() => handleTabChange('reviews')}
-      >
-        <MdReviews className="mr-2" /> Reviews
       </button>
     </div>
 
