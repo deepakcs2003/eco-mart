@@ -1,7 +1,8 @@
 import React from 'react';
 import { MdDescription, MdBuild, MdReviews } from 'react-icons/md';
+import ProductReviews from './ProductReviews';
 
-const ProductTabs = ({ product, activeTab, handleTabChange, colors }) => (
+const ProductTabs = ({ product, activeTab, handleTabChange, colors}) => (
   <div className="border-t mt-8" style={{ borderColor: colors.neutral2 }}>
     <div className="flex border-b" style={{ borderColor: colors.neutral2 }}>
       <button
@@ -56,12 +57,6 @@ const ProductTabs = ({ product, activeTab, handleTabChange, colors }) => (
               </div>
             ))}
           </div>
-        </div>
-      )}
-
-      {activeTab === 'reviews' && (
-        <div className="flex flex-col items-center justify-center py-8">
-          {/* Reviews content goes here */}
         </div>
       )}
     </div>

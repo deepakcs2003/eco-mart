@@ -318,13 +318,11 @@ const scrapeProducts = async (req, res) => {
 
         const urls = [
             { url: `https://www.flipkart.com/search?q=${encodeURIComponent(searchQuery)}`, source: "Flipkart" },
-            { url: `https://www.snapdeal.com/search?keyword=${encodeURIComponent(searchQuery)}&santizedKeyword=${encodeURIComponent(searchQuery)}&catId=0&suggested=false&vertical=p&noOfResults=20&clickSrc=searchOnLanding&lastKeyword=${encodeURIComponent(searchQuery)}&prodCatId=0`, source: "Snapdeal" },
-            { url: `https://www.meesho.com/search?q=${encodeURIComponent(searchQuery)}`, source: "Meesho" },
-            { url: `https://www.indiamart.com/search.mp?ss=${encodeURIComponent(searchQuery)}`, source: "IndiaMART" },
-            { url: `https://www.nykaa.com/search/result/?q=${encodeURIComponent(searchQuery)}`, source: "Nykaa" },
-            { url: `https://www.amazon.in/s?k=${encodeURIComponent(searchQuery)}&sort=featured-rank`, source: "Amazon India" },
-            { url: `https://www.amazon.com/s?k=${encodeURIComponent(searchQuery)}&sort=featured-rank`, source: "Amazon USA" },
+            { url: `https://www.amazon.in/s?k=${encodeURIComponent(searchQuery)}&sort=featured-rank`, source: "Amazon" },
             { url: `https://www.walmart.com/search?q=${encodeURIComponent(searchQuery)}&sort=relevance`, source: "Walmart" },
+            { url: `https://www.meesho.com/search?q=${encodeURIComponent(searchQuery)}`, source: "Meesho" },
+            { url: `https://www.nykaa.com/search/result/?q=${encodeURIComponent(searchQuery)}`, source: "Nykaa" },
+            { url: `https://www.amazon.com/s?k=${encodeURIComponent(searchQuery)}&sort=featured-rank`, source: "Amazon USA" },
             { url: `https://www.alibaba.com/trade/search?fsb=y&IndexArea=product_en&SearchText=${encodeURIComponent(searchQuery)}`, source: "Alibaba" },
             { url: `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(searchQuery)}`, source: "eBay" },
         ];
@@ -366,7 +364,7 @@ const scrapeProducts = async (req, res) => {
         
 
         // Function to process URLs with a worker pool
-        async function* processUrlsWithPool(urls, concurrency = 2) {
+        async function* processUrlsWithPool(urls, concurrency = 5) {
             let index = 0;
             const activeRequests = new Set();
 

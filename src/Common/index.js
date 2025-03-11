@@ -42,5 +42,9 @@ const summaryApi={
         method: "POST",
     },
     
+    getReviews: {
+        url: `${backendDomain}/api/v1/scrape/getReviews`,
+        method: "post"
+    },
 }
 export default summaryApi

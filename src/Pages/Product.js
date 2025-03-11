@@ -193,14 +193,18 @@ export const Product = () => {
   }, [selectedProductUrl]);
   
   // Main render
-  if (selectedProductUrl) {
-    return (
-      <div className="min-h-screen bg-[#A8B5A2] font-sans">
-        <DraggableBackButton onBackClick={handleBackToProducts} />
-        <ProductDetail url={selectedProductUrl} />
-      </div>
-    );
-  }
+  // Main render
+if (selectedProductUrl) {
+  // Find the selected product to get its source
+  const selectedProduct = productData.find(product => product.url === selectedProductUrl);
+  
+  return (
+    <div className="min-h-screen bg-[#A8B5A2] font-sans">
+      <DraggableBackButton onBackClick={handleBackToProducts} />
+      <ProductDetail url={selectedProductUrl} source={selectedProduct?.source} />
+    </div>
+  );
+}
 
   return (
     <div className="min-h-screen bg-[#A8B5A2] font-sans">
