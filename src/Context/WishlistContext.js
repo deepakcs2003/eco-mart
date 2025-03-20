@@ -5,67 +5,78 @@ const WishlistContext = createContext();
 
 const WishlistProvider = ({ children }) => {
   const [allWishlistProducts, setAllWishlistProducts] = useState([]);
+  const [token, setToken] = useState(localStorage.getItem("token"));
 
-  const token = localStorage.getItem("token");
+  useEffect(() => {
+    setToken(localStorage.getItem("token"));
+  }, []);
 
-  // Fetch all wishlist products from backend
   const fetchAllWishlistProducts = async () => {
-    // console.log("i am deepak is allwidhlist")
-    if (!token) return;
+    if (!token) return console.warn("⚠️ No token found. Cannot fetch wishlist.");
+    
     try {
-      const response = await fetch(summaryApi.GetAllWishList.url, {
-        method:summaryApi.GetAllWishList.method,
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      const response = await fetch(summaryApi.getAllWishlistProducts.url, {
+        method: summaryApi.getAllWishlistProducts.method,
+        headers: { Authorization: `Bearer ${token}` },
       });
-
-      if (response.ok) {
-        const data = await response.json();
-        // console.log(data);
-        setAllWishlistProducts(data.wishlist);
-      }
+      
+      if (!response.ok) throw new Error("Failed to fetch wishlist");
+      
+      const data = await response.json();
+      setAllWishlistProducts(data.wishlist || []);
     } catch (error) {
-      console.error("Error fetching wishlist products:", error);
+      console.error("❌ Error fetching wishlist:", error);
     }
   };
 
-  // Add to wishlist
   const addToWishlist = async (product) => {
-    console.log("in wishlist section",product)
-    console.log(token);
-    // if (!wishlist.some((item) => item.productUrl === product.productUrl)) {
-    //   const updatedWishlist = [...wishlist, product];
-    //   setWishlist(updatedWishlist);
-      if (token) {
-        await fetch(summaryApi.AddToWishList.url, {
-          method: summaryApi.AddToWishList.method,
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ product }),
-        });
-      }
-    // }
+    if (!product?.url || !token) return console.warn("⚠️ Invalid product or token missing.");
+    try {
+      const response = await fetch(summaryApi?.addToWishlist?.url, {
+        method: summaryApi?.addToWishlist?.method,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ product }),
+      });
+      
+      if (!response.ok) throw new Error("Failed to add product to wishlist");
+      
+      await fetchAllWishlistProducts();
+    } catch (error) {
+      console.error("❌ Error adding to wishlist:", error);
+    }
   };
 
-  // Remove from wishlist
   const removeFromWishlist = async (productUrl) => {
-    console.log(productUrl);
-    if (token) {
-      await fetch(summaryApi.DeteleToWishList.url, {
-        method:summaryApi.DeteleToWishList.method,
+    if (!productUrl || !token) return console.warn("⚠️ Invalid product URL or token missing.");
+
+    try {
+      const response = await fetch(summaryApi.deleteFromWishlist.url, {
+        method: summaryApi.deleteFromWishlist.method,
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ productUrl }),
       });
+      
+      if (!response.ok) throw new Error("Failed to remove product from wishlist");
+      
+      await fetchAllWishlistProducts();
+    } catch (error) {
+      console.error("❌ Error removing from wishlist:", error);
     }
   };
+
   return (
-    <WishlistContext.Provider value={{addToWishlist, removeFromWishlist, allWishlistProducts, fetchAllWishlistProducts }}>
+    <WishlistContext.Provider value={{
+      addToWishlist,
+      removeFromWishlist,
+      allWishlistProducts,
+      fetchAllWishlistProducts
+    }}>
       {children}
     </WishlistContext.Provider>
   );

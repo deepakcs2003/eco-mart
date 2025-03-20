@@ -26,9 +26,11 @@ const ProductDetail = ({ url, source }) => {
   const [error, setError] = useState(null);
   const [activeImage, setActiveImage] = useState(0);
   const [activeTab, setActiveTab] = useState('description');
-  const [savedProducts, setSavedProducts] = useState([]);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const { addToWishlist, removeFromWishlist, fetchAllWishlistProducts, wishlistItems } = useContext(WishlistContext);
+  
+  // Track wishlist state directly within the component
+  const [isInWishlist, setIsInWishlist] = useState(false);
 
   const [reviews, setReviews] = useState([]);
   const [reviewLoading, setReviewLoading] = useState(true);
@@ -79,7 +81,7 @@ const ProductDetail = ({ url, source }) => {
     if (url && source) {
       fetchReviews();
     }
-  }, [url, source]);
+  }, []);
 
   // Fetch product details
   const fetchProduct = async () => {
@@ -110,19 +112,20 @@ const ProductDetail = ({ url, source }) => {
     fetchProduct();
   }, [url]);
 
-  // Fetch saved products on component mount
+  // Check if the current product is in the wishlist
   useEffect(() => {
-    const loadSavedProducts = async () => {
-      try {
-        const products = await fetchAllWishlistProducts();
-        setSavedProducts(products || []);
-      } catch (err) {
-        console.error("Error loading wishlist products:", err);
+    // Check if this product exists in wishlistItems
+    const checkWishlistStatus = () => {
+      if (wishlistItems && wishlistItems.length > 0) {
+        const found = wishlistItems.some(item => item.url === url);
+        setIsInWishlist(found);
+      } else {
+        setIsInWishlist(false);
       }
     };
 
-    loadSavedProducts();
-  }, [fetchAllWishlistProducts]);
+    checkWishlistStatus();
+  }, [wishlistItems, url]);
 
   const handleImageClick = (index) => {
     setActiveImage(index);
@@ -131,40 +134,31 @@ const ProductDetail = ({ url, source }) => {
   const handleTabChange = (tab) => {
     setActiveTab(tab);
   };
-console.log(product)
+
   const handleSaveProduct = async () => {
     if (!product) return;
-
+    console.log(product)
     const productInfo = {
       url, // Using URL as the unique identifier
       price: product.price,
-      mainImage: product.images?.length > 0 ? product.images[0].url : "/api/placeholder/400/400",
+      image:product.mainImage.url,
       name: product.name,
       source: source
     };
-
-    // Check if the product is already saved
-    const isAlreadySaved = isProductSaved(url);
-
+    console.log(productInfo)
     try {
-      if (isAlreadySaved) {
+      if (isInWishlist) {
+        // Remove product from wishlist
         await removeFromWishlist(url);
-        setSavedProducts(prev => prev.filter(item => item.url !== url));
+        setIsInWishlist(false);
       } else {
+        // Add product to wishlist
         await addToWishlist(productInfo);
-        setSavedProducts(prev => [...prev, productInfo]);
+        setIsInWishlist(true);
       }
-
-      // Refresh the wishlist after updating
-      await fetchAllWishlistProducts();
     } catch (error) {
       console.error("Error handling wishlist:", error);
     }
-  };
-
-  const isProductSaved = (productUrl) => {
-    return savedProducts.some(item => item.url === productUrl) ||
-      (wishlistItems && wishlistItems.some(item => item.url === productUrl));
   };
 
   if (loading && !product) return <LoadingSpinner/>;
@@ -190,7 +184,7 @@ console.log(product)
             <ProductInfo
               product={product}
               handleSaveProduct={handleSaveProduct}
-              isProductSaved={isProductSaved(url)}
+              isProductSaved={isInWishlist}
               colors={COLORS}
             />
 
@@ -237,7 +231,7 @@ console.log(product)
                 <ProductInfo
                   product={product}
                   handleSaveProduct={handleSaveProduct}
-                  isProductSaved={isProductSaved(url)}
+                  isProductSaved={isInWishlist}
                   colors={COLORS}
                 />
               </div>

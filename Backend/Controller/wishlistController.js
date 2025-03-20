@@ -1,7 +1,7 @@
 const Wishlist = require("../Models/Wishlist");
 const addToWishlist = async (req, res) => {
   const { url, name, mainImage, price,source} = req.body?.product;
-  console.log(req.body);
+  console.log("into prodict data of wislist",req.body);
 
   try {
     let wishlist = await Wishlist.findOne({ userId: req.user.id });

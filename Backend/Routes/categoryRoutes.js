@@ -9,13 +9,13 @@ const {
   updateCategory,
   deleteCategory,
 } = require("../Controller/categoryController");
-const { isAdmin } = require("../middleware/authMiddleware");
+// const { isAdmin } = require("../Middleware/authMiddleware");
 
 // Admin protected route to get all users
-router.get("/allUsers", isAdmin,getAllUsers);
+router.get("/allUsers",getAllUsers);
 
 // Create a new category
-router.post("/new", isAdmin,createCategory);
+router.post("/new",createCategory);
 
 // Fetch all categories
 router.get("/category", getCategories);
@@ -24,10 +24,10 @@ router.get("/category", getCategories);
 router.get("/:category/subcategories", getSubcategories);
 
 //update a category
-router.put("/:categoryId",isAdmin,updateCategory);
+router.put("/:categoryId",updateCategory);
 
 //delete a category
-router.delete("/:categoryId",isAdmin,deleteCategory);
+router.delete("/:categoryId",deleteCategory);
 
 // Fetch products under a specific subcategory
 router.get("/:category/:subcategory/products", getProductsBySubcategory);

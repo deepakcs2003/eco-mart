@@ -7,6 +7,7 @@ const authRoutes = require('./Routes/AuthRoutes');
 const scrapeRoutes = require('./Routes/scrapeRoutes');
 const categoryRoutes = require('./Routes/categoryRoutes');
 const wishlistRoutes = require('./Routes/wishlistRoutes');
+const brandRoutes = require('./Routes/brandRoutes');
 
 dotenv.config();
 const app = express();
@@ -19,6 +20,7 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/scrape',scrapeRoutes);
 app.use('/api/v1/categories',categoryRoutes)
 app.use('/api/v1/wishlist',wishlistRoutes)
+app.use('/api/v1',brandRoutes);
 
 app.get('/', (req, res) => {
   res.send('Welcome to the Eco-Mart API Home Page!');

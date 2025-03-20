@@ -216,21 +216,30 @@ export const Product = () => {
   };
 
   // Add to wishlist functionality
-  const toggleWishlist = (product) => {
-    if (!product || !product.url) return; // Add validation
-    
-    const isInWishlist = wishlist.some(item => item.url === product.url);
+  const toggleWishlist = async (product) => {
+    if (!product || !product.url) {
+        console.error("❌ toggleWishlist received invalid product:", product);
+        return;
+    }
+
+    console.log("🔄 Toggling wishlist for:", product.url);
+
+    const isInWishlist = wishlist.some(item => item?.url === product?.url);
 
     if (isInWishlist) {
-      setWishlist(wishlist.filter(item => item.url !== product.url));
-      removeFromWishlist(product.url);
-      fetchAllWishlistProducts();
+        setWishlist(wishlist.filter(item => item?.url !== product?.url));
+        await removeFromWishlist(product?.url);
     } else {
-      setWishlist([...wishlist, product]);
-      addToWishlist(product);
-      fetchAllWishlistProducts();
+        setWishlist([...wishlist, product]);
+        await addToWishlist(product); // Ensure this gets a valid product
     }
-  };
+
+    await fetchAllWishlistProducts();
+};
+
+  
+  
+  
 
   // Get max price from all products
   const getMaxPrice = () => {

@@ -1,13 +1,13 @@
 import React from 'react';
 import placeholder from "../Assist/placeholder.webp";
 
-const ProductCard = ({ 
-  product, 
-  isInWishlist, 
-  currencyType, 
-  exchangeRate, 
-  onCardClick, 
-  onToggleWishlist 
+const ProductCard = ({
+  product,
+  isInWishlist,
+  currencyType,
+  exchangeRate,
+  onCardClick,
+  onToggleWishlist
 }) => {
   // Format price with currency
   const formatPrice = (price, currencyRaw) => {
@@ -71,9 +71,10 @@ const ProductCard = ({
               </span>
             )}
           </div>
-          <div className="text-xs text-[#8B5A2B] mb-3">
-            From: {product.source}
+          <div className="text-base font-semibold text-[#6B4226] mb-3">
+            From: {product?.source || product?.brandName}
           </div>
+
           <div className="flex gap-2">
             <a
               href={product.url}

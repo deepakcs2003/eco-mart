@@ -7,7 +7,7 @@ const Wishlist = () => {
   const { allWishlistProducts, fetchAllWishlistProducts, removeFromWishlist } = useContext(WishlistContext);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedProductUrl, setSelectedProductUrl] = useState(null);
-
+  console.log(allWishlistProducts)
   useEffect(() => {
     const loadData = async () => {
       setIsLoading(true);

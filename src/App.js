@@ -1,8 +1,8 @@
 import React from "react";
 import { ToastContainer } from "react-toastify";
+import { Outlet } from "react-router-dom";
 import Header from "./Components/Header";
 import Footer from "./Components/Footer";
-import { Outlet } from "react-router-dom";
 import { WishlistProvider } from "./Context/WishlistContext";
 
 function App() {
@@ -12,7 +12,7 @@ function App() {
         <ToastContainer />
         <Header />
         <main className="flex-grow overflow-hidden pt-14">
-          <Outlet />
+          <Outlet /> {/* This will render the nested routes dynamically */}
         </main>
         <Footer />
       </div>

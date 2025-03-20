@@ -1,308 +1,354 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import summaryApi from "../Common";
+import { WishlistContext } from "../Context/WishlistContext";
+import ProductCard from "../Components/ProductCard";
+import DraggableBackButton from "../Components/DraggableBackButton";
+import ProductDetail from "../Components/ProductDetail";
 
 const CategoriesPage = () => {
   const [companies] = useState([
-    { id: 'amazon', name: 'Amazon' },
-    { id: 'walmart', name: 'Walmart' },
-    { id: 'flipkart', name: 'Flipkart' },
-    { id: 'ebay', name: 'eBay' }
+    { id: "amazon", name: "Amazon" },
+    { id: "walmart", name: "Walmart" },
+    { id: "flipkart", name: "Flipkart" },
+    { id: "ebay", name: "eBay" },
   ]);
+
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [subcategories, setSubcategories] = useState([]);
+  const [subcategoryName, setSelectedSubCategory] = useState('');
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [showAllCategories, setShowAllCategories] = useState(false);
-  const VISIBLE_CATEGORIES = 5; // Number of categories to show initially
+  const [wishlist, setWishlist] = useState([]);
+const [selectedProductUrl, setSelectedProductUrl] = useState(null);
+  const [currencyType, setCurrencyType] = useState("INR");
+  const [exchangeRate, setExchangeRate] = useState(83.5); // USD to INR approximate rate
 
+    const {addToWishlist, removeFromWishlist, fetchAllWishlistProducts} = useContext(WishlistContext);
+
+// Handle product selection
+  const [listScrollPosition, setListScrollPosition] = useState(0);
+
+  // Helper function to safely parse JSON responses
+  const safeJsonParse = async (response) => {
+    const text = await response.text();
+    try {
+      return JSON.parse(text);
+    } catch (e) {
+      console.error("Invalid JSON response:", text.substring(0, 100));
+      throw new Error(`Server returned invalid JSON: ${text.substring(0, 100)}...`);
+    }
+  };
+
+  // Fetch categories and brands on component mount
   useEffect(() => {
-    const fetchCategories = async () => {
+    const fetchInitialData = async () => {
+      setLoading(true);
+      setError(null);
       try {
-        const response = await fetch(summaryApi.getCategories.url);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch categories: ${response.status} ${response.statusText}`);
+        // Fetch categories
+        const categoriesResponse = await fetch(summaryApi.getCategories.url);
+
+        if (selectedProductUrl) {
+          const savedProductPosition = localStorage.getItem(`scrollPosition_${selectedProductUrl}`);
+          if (savedProductPosition) {
+            window.scrollTo(0, parseInt(savedProductPosition, 10));
+          }
+        } else {
+          // Restore list position
+          const savedListPosition = localStorage.getItem('listScrollPosition');
+          if (savedListPosition) {
+            window.scrollTo(0, parseInt(savedListPosition, 10));
+          }
         }
-        const data = await response.json();
-        setCategories(data);
+        
+        if (!categoriesResponse.ok) {
+          throw new Error(`Failed to fetch categories (${categoriesResponse.status}): ${categoriesResponse.statusText}`);
+        }
+        
+        const categoriesData = await safeJsonParse(categoriesResponse);
+        setCategories(categoriesData);
       } catch (err) {
+        console.error("Initial data fetch error:", err);
         setError(err.message);
       } finally {
         setLoading(false);
       }
     };
+    fetchInitialData();
+  }, [selectedProductUrl]);
 
-    fetchCategories();
-  }, []);
+  // Main render
+  if (selectedProductUrl) {
+    return (
+      <div className="min-h-screen bg-[#A8B5A2] font-sans">
+        <DraggableBackButton onBackClick={handleBackToProducts} />
+        <ProductDetail url={selectedProductUrl} />
+      </div>
+    );
+  }
 
-  // Add event listener to close modal on escape key
-  useEffect(() => {
-    const handleEscape = (event) => {
-      if (event.key === 'Escape') {
-        setShowAllCategories(false);
-      }
+
+    // Handle back to products list
+    const handleBackToProducts = () => {
+      // Remember which product we're coming from
+      const currentProduct = selectedProductUrl;
+      localStorage.setItem(`scrollPosition_${currentProduct}, window.scrollY.toString()`);
+      
+      // Navigate back to product list
+      setSelectedProductUrl(null);
+      
+      // Restore list scroll position after state update
+      setTimeout(() => {
+        const savedPosition = localStorage.getItem('listScrollPosition');
+        if (savedPosition) {
+          window.scrollTo(0, parseInt(savedPosition, 10));
+        }
+      }, 0);
     };
 
-    if (showAllCategories) {
-      document.addEventListener('keydown', handleEscape);
-      // Prevent scrolling when modal is open
-      document.body.style.overflow = 'hidden';
-    }
-
-    return () => {
-      document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'unset';
-    };
-  }, [showAllCategories]);
-
+  // Handle company selection
   const handleCompanyClick = (companyId) => {
     setSelectedCompany(companyId);
     setSelectedCategory(null);
     setSubcategories([]);
     setProducts([]);
+    setSelectedSubCategory('');
   };
 
+  // Handle category selection
   const handleCategoryClick = async (categoryName) => {
     setSelectedCategory(categoryName);
-    setShowAllCategories(false);
     setLoading(true);
     setError(null);
+    setSubcategories([]); // Clear subcategories before fetching
+    setProducts([]); // Clear products before fetching
+    setSelectedSubCategory('');
 
     try {
-      const [subcategoryResponse, productResponse] = await Promise.all([
-        fetch(summaryApi.getSubcategories(categoryName).url),
-        fetch(`${summaryApi.getCategories.url}/${categoryName}/products?company=${selectedCompany}`)
-      ]);
-
-      if (!subcategoryResponse.ok || !productResponse.ok) {
-        throw new Error("Failed to fetch data");
+      let url;
+      if (typeof summaryApi.getSubcategories === 'function') {
+        url = summaryApi.getSubcategories(categoryName).url;
+      } else {
+        url = `${summaryApi.getSubcategories.url}/${categoryName}`;
+      }
+      
+      console.log("Fetching subcategories from:", url);
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch subcategories (${response.status}): ${response.statusText}`);
       }
 
-      const subcategoriesData = await subcategoryResponse.json();
-      const productsData = await productResponse.json();
-
-      setSubcategories(subcategoriesData);
-      setProducts(productsData.productList);
+      const data = await safeJsonParse(response);
+      setSubcategories(data);
     } catch (err) {
+      console.error("Subcategories fetch error:", err);
       setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
+  // Handle subcategory selection
   const handleSubcategoryClick = async (subcategoryName) => {
+    setSelectedSubCategory(subcategoryName);
     setLoading(true);
     setError(null);
+    setProducts([]); // Clear products before fetching
 
     try {
-      const response = await fetch(
-        `${summaryApi.getProductsBySubcategory(selectedCategory, subcategoryName).url}?company=${selectedCompany}`
-      );
-      if (!response.ok) {
-        throw new Error("Failed to fetch subcategory products");
+      let url;
+      if (typeof summaryApi.getProductsBySubcategory === 'function') {
+        url = summaryApi.getProductsBySubcategory(selectedCategory,subcategoryName).url;
       }
-      const data = await response.json();
+      
+      console.log("Fetching product subcategories from:", url);
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch subcategories (${response.status}): ${response.statusText}`);
+      }
+
+      const data = await safeJsonParse(response);
+      console.log("all product without brand:",data.productList);
       setProducts(data.productList);
     } catch (err) {
+      console.error("Subcategories fetch error:", err);
       setError(err.message);
     } finally {
       setLoading(false);
     }
+  }
+
+
+  // Add to wishlist functionality
+  const toggleWishlist = (product) => {
+      if (!product || !product.url) return; // Add validation
+      
+      const isInWishlist = wishlist.some(item => item.url === product.url);
+  
+      if (isInWishlist) {
+        setWishlist(wishlist.filter(item => item.url !== product.url));
+        removeFromWishlist(product.url);
+        fetchAllWishlistProducts();
+      } else {
+        setWishlist([...wishlist, product]);
+        addToWishlist(product);
+        fetchAllWishlistProducts();
+      }
   };
 
-  // Custom Modal Component
-  const CategoryModal = () => {
-    if (!showAllCategories) return null;
 
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center">
-        <div 
-          className="absolute inset-0 bg-black bg-opacity-50"
-          onClick={() => setShowAllCategories(false)}
-        />
-        <div className="relative bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-xl font-bold">All Categories</h3>
-            <button 
-              onClick={() => setShowAllCategories(false)}
-              className="text-gray-500 hover:text-gray-700 p-2"
-            >
-              ✕
-            </button>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-            {categories.map((category) => (
-              <button
-                key={category.name}
-                onClick={() => handleCategoryClick(category.name)}
-                className={`
-                  p-3 rounded-lg text-left transition-all duration-200
-                  ${selectedCategory === category.name 
-                    ? 'bg-blue-600 text-white' 
-                    : 'bg-gray-100 text-gray-700 hover:bg-blue-50'}
-                `}
-              >
-                {category.name}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
+    const handleProductSelect = (url) => {
+      // Save current scroll position before showing product details
+      setListScrollPosition(window.scrollY);
+      localStorage.setItem('listScrollPosition', window.scrollY.toString());
+      
+      // Navigate to product detail
+      setSelectedProductUrl(url);
+      
+      // Scroll to top when viewing new product
+      window.scrollTo(0, 0);
+    };
+
+  // Helper function to safely get name from category/subcategory object
+  const getSafeName = (item) => {
+    if (!item) return 'Unknown';
+    if (typeof item === 'string') return item;
+    if (typeof item.name === 'string') return item.name;
+    return 'Unknown';
   };
-
+  
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      {/* Company Sidebar */}
-      <div className="w-64 bg-white shadow-lg p-6">
-        <h2 className="text-xl font-bold mb-6 text-gray-800">Companies</h2>
-        <div className="space-y-4">
+    <div className="container mx-auto p-6">
+      <div className="flex flex-col md:flex-row">
+        {/* Sidebar for Companies */}
+        <aside className="w-full md:w-1/4 bg-gray-100 p-4 rounded mb-4 md:mb-0 md:mr-4">
+          <h2 className="text-xl font-semibold mb-4">Companies</h2>
           {companies.map((company) => (
             <button
               key={company.id}
               onClick={() => handleCompanyClick(company.id)}
-              className={`
-                w-full px-4 py-3 rounded-lg transition-all duration-200
-                flex items-center space-x-3
-                ${selectedCompany === company.id 
-                  ? 'bg-blue-600 text-white' 
-                  : 'bg-gray-100 text-gray-700 hover:bg-blue-50'}
-              `}
+              className={`block w-full py-2 px-4 mb-2 text-left rounded ${
+                selectedCompany === company.id ? "bg-blue-500 text-white" : "bg-gray-200"
+              }`}
             >
-              <span>{company.name}</span>
+              {company.name}
             </button>
           ))}
-        </div>
-      </div>
+        </aside>
 
-      {/* Main Content */}
-      <div className="flex-1 p-6">
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <h2 className="text-3xl font-bold mb-6 text-gray-800">
-            {selectedCompany ? `${companies.find(c => c.id === selectedCompany).name} Products` : 'Select a Company'}
-          </h2>
-
-          {selectedCompany && (
-            <>
-              {/* Categories with More button */}
-              <div className="relative mb-8">
-                <div className="overflow-x-auto pb-4">
-                  <div className="flex space-x-4 min-w-max px-4">
-                    {categories.slice(0, VISIBLE_CATEGORIES).map((category) => (
-                      <button
-                        key={category.name}
-                        onClick={() => handleCategoryClick(category.name)}
-                        className={`
-                          px-6 py-3 rounded-full transition-all duration-200 transform hover:scale-105
-                          ${selectedCategory === category.name 
-                            ? 'bg-blue-600 text-white shadow-lg' 
-                            : 'bg-gray-100 text-gray-700 hover:bg-blue-50 shadow'}
-                        `}
-                      >
-                        {category.name}
-                      </button>
-                    ))}
-                    {categories.length > VISIBLE_CATEGORIES && (
-                      <button
-                        onClick={() => setShowAllCategories(true)}
-                        className="px-6 py-3 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300 transition-all duration-200 transform hover:scale-105 shadow"
-                      >
-                        More Categories ({categories.length - VISIBLE_CATEGORIES}+)
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Categories Modal */}
-              <CategoryModal />
-
-              {/* Rest of the components remain the same */}
-              {/* Subcategories */}
-              {selectedCategory && (
-                <div className="relative mb-8">
-                  <div className="overflow-x-auto pb-4">
-                    <div className="flex space-x-4 min-w-max px-4">
-                      {subcategories.map((subcategory) => (
-                        <button
-                          key={subcategory.name}
-                          onClick={() => handleSubcategoryClick(subcategory.name)}
-                          className="px-4 py-2 rounded-full bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors duration-200"
-                        >
-                          {subcategory.name}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-
-          {/* Loading, Error, and Products sections remain the same */}
-          {/* Loading state */}
-          {loading && (
-            <div className="flex items-center justify-center p-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            </div>
-          )}
-
-          {/* Error state */}
+        {/* Main Content */}
+        <main className="w-full md:w-3/4 p-4 bg-white rounded">
+          {loading && <p className="p-2 bg-blue-100 rounded">Loading...</p>}
           {error && (
-            <div className="text-center p-4 text-red-600 bg-red-50 rounded-lg">
-              {error}
+            <div className="p-4 mb-4 bg-red-50 border border-red-300 rounded">
+              <h4 className="font-bold text-red-700">Error:</h4>
+              <p className="text-red-700">{error}</p>
             </div>
           )}
 
-          {/* Products grid */}
-          {!loading && products?.length > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {products.map((product, index) => (
-                <div key={index} className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-200 overflow-hidden">
-                  <div className="p-4">
-                    <div className="relative overflow-hidden rounded-lg mb-4">
-                      <img
-                        src={product.mainImage?.url}
-                        alt={product.name}
-                        className="w-full h-48 object-cover transform hover:scale-105 transition-transform duration-200"
-                      />
-                    </div>
-                    <h3 className="font-semibold text-gray-900 line-clamp-2 mb-2">
-                      {product.name}
-                    </h3>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <span className="text-lg font-bold text-green-600">
-                          {product.currencyRaw}
-                          {product.price}
-                        </span>
-                        <span className="ml-2 text-sm text-gray-500 line-through">
-                          {product.regularPrice}
-                        </span>
-                      </div>
-                    </div>
-                    <a
-                      href={product.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-4 block w-full text-center py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
+          {/* Selected Filters Summary */}
+          <div className="mb-4">
+            <h2 className="text-xl font-semibold mb-2">Current Filters</h2>
+            <div className="flex flex-wrap gap-2">
+              {selectedCompany && (
+                <span className="px-3 py-1 bg-blue-100 rounded-full text-blue-800">
+                  Company: {companies.find(c => c.id === selectedCompany)?.name}
+                </span>
+              )}
+              {selectedCategory && (
+                <span className="px-3 py-1 bg-blue-100 rounded-full text-blue-800">
+                  Category: {selectedCategory}
+                </span>
+              )}
+              {subcategoryName && (
+                <span className="px-3 py-1 bg-green-100 rounded-full text-green-800">
+                  Subcategory: {subcategoryName}
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Categories Section */}
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold mb-4">Categories</h2>
+            <div className="flex flex-wrap">
+              {categories.length === 0 && !loading && !error ? (
+                <p className="text-gray-500">No categories available</p>
+              ) : (
+                categories.map((category, index) => {
+                  const categoryName = getSafeName(category);
+                  return (
+                    <button
+                      key={index}
+                      onClick={() => handleCategoryClick(categoryName)}
+                      className={`mr-2 mb-2 px-4 py-2 rounded ${
+                        selectedCategory === categoryName ? "bg-blue-500 text-white" : "bg-blue-200"
+                      }`}
                     >
-                      View Details
-                    </a>
-                  </div>
-                </div>
-              ))}
+                      {categoryName}
+                    </button>
+                  );
+                })
+              )}
+            </div>
+          </div>
+
+          {/* Subcategories Section */}
+          {selectedCategory && (
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold mb-4">Subcategories</h3>
+              <div className="flex flex-wrap">
+                {subcategories.length === 0 && !loading ? (
+                  <p className="text-gray-500">No subcategories available</p>
+                ) : (
+                  subcategories.map((subcategory, index) => {
+                    const subcategoryName = getSafeName(subcategory);
+                    return (
+                      <button
+                        key={index}
+                        onClick={() => handleSubcategoryClick(subcategoryName)}
+                        className={`mr-2 mb-2 px-4 py-2 rounded ${
+                          subcategoryName === getSafeName(subcategory) ? "bg-green-500 text-white" : "bg-green-200"
+                        }`}
+                      >
+                        {subcategoryName}
+                      </button>
+                    );
+                  })
+                )}
+              </div>
             </div>
           )}
 
-          {!loading && products?.length === 0 && selectedCompany && (
-            <p className="text-center text-gray-600 p-8">
-              No products found. Try another category.
-            </p>
-          )}
-        </div>
+
+
+          {/* Products Section */}
+          <div>
+            <h3 className="text-lg font-semibold mb-4">Products</h3>
+            {products.length === 0 && !loading ? (
+              <p className="text-gray-500">No products available. Select filters to view products.</p>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {products.map((product, index) => (
+                  <ProductCard
+                  key={`${product.url}-${index}`}
+                  product={product}
+                  isInWishlist={wishlist.some(item => item.url === product.url)}
+                  currencyType={currencyType}
+                  exchangeRate={exchangeRate}
+                  onCardClick={handleProductSelect}
+                  onToggleWishlist={toggleWishlist}
+                />
+                ))}
+              </div>
+            )}
+          </div>
+        </main>
       </div>
     </div>
   );
