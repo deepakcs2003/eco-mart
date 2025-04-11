@@ -40,29 +40,4 @@ const authToken = async (req, res, next) => {
   }
 };
 
-// Middleware to check if the user is an admin
-const isAdmin = (req, res, next) => {
-  if (req.user && req.user.role === "admin") {
-    next();
-  } else {
-    return res.status(403).json({
-      success: false,
-      message: "Access denied. Admins only.",
-    });
-  }
-};
-
-// Middleware to check if the user is a normal user
-const isUser = (req, res, next) => {
-  console.log("suthetication data",req.user)
-  if (req.user && req.user.role === "user") {
-    next();
-  } else {
-    return res.status(403).json({
-      success: false,
-      message: "Access denied. Users only.",
-    });
-  }
-};
-
-module.exports = { authToken, isAdmin, isUser };
+module.exports =  authToken ;
