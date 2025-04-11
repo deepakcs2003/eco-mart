@@ -1,5 +1,6 @@
 const local = "http://localhost:5000";
-const backendDomain = local;
+const production ="https://eco-mart-1-2yds.onrender.com"; // Replace with your production URL
+const backendDomain = production;
 
 const summaryApi = {
     logIn: {
