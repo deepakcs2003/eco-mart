@@ -6,6 +6,7 @@ import { WishlistContext } from "../Context/WishlistContext";
 import { fetchProducts } from "../API/getBrandedProductApiCall";
 import summaryApi from "../Common";
 import ProductDetail from "../Components/ProductDetail";
+import { ArrowLeft, Leaf } from "lucide-react";
 
 const shuffleArray = (array) => {
   if (!Array.isArray(array)) return [];
@@ -28,7 +29,7 @@ const Home = () => {
   const [wishlist, setWishlist] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const { addToWishlist, removeFromWishlist, fetchAllWishlistProducts } =useContext(WishlistContext);
+  const { addToWishlist, removeFromWishlist, fetchAllWishlistProducts } = useContext(WishlistContext);
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -64,21 +65,6 @@ const Home = () => {
     fetchBrandedProducts();
   }, []);
 
-  // useEffect(() => {
-  //   const getWishlistItems = async () => {
-  //     try {
-  //       const items = await fetchAllWishlistProducts();
-  //       console.log(items);
-  //       // Ensure items is an array
-  //       setWishlist(Array.isArray(items) ? items : []);
-  //     } catch (error) {
-  //       console.error("Error fetching wishlist:", error);
-  //       setWishlist([]);
-  //     }
-  //   };
-  //   getWishlistItems();
-  // }, [fetchAllWishlistProducts]);
-
   const handleBrandSelect = (brand) => {
     setSelectedBrand(brand);
     window.scrollTo({
@@ -106,33 +92,35 @@ const Home = () => {
         await removeFromWishlist(product?.url);
     } else {
         setWishlist([...wishlist, product]);
-        await addToWishlist(product); // Ensure this gets a valid product
+        await addToWishlist(product);
     }
 
     await fetchAllWishlistProducts();
-};
+  };
 
   const closeBrandCard = () => {
     setSelectedBrand(null);
   };
 
   return (
-    <div className="bg-[#A8B5A2] min-h-screen w-full">
-      {/* If a product is selected, show ProductDetail */}
+    <div className="bg-[#B5C4B1] min-h-screen w-full">
       {selectedProduct ? (
-        <div className="min-h-screen bg-[#A8B5A2] font-sans">
+        <div className="min-h-screen bg-[#B5C4B1] font-sans pt-4 container mx-auto px-4">
           <button
             onClick={() => setSelectedProduct(null)}
-            className="bg-[#317873] text-white py-2 px-4 rounded-lg hover:bg-[#87CEEB] transition-colors duration-200 text-sm w-full text-center shadow-md mb-4"
+            className="bg-[#228B22] text-white py-2 px-4 rounded-lg hover:bg-[#6B8E23] transition-colors duration-200 flex items-center justify-center gap-2 shadow-md mb-6 max-w-xs"
           >
+            <ArrowLeft size={16} />
             Back to Products
           </button>
-          <ProductDetail url={selectedProduct.url} source={selectedProduct.brandName} />
+          <div className="bg-[#F5DEB3] rounded-lg shadow-lg border-l-4 border-[#317873] overflow-hidden">
+            <ProductDetail url={selectedProduct.url} source={selectedProduct.brandName} />
+          </div>
         </div>
       ) : (
         <>
           {/* Brand scrollable bar */}
-          <div className="bg-[#F5DEB3] py-4 shadow-md">
+          <div className="bg-[#F5DEB3] py-4 shadow-md border-b-2 border-[#8B5A2B]">
             <div className="container mx-auto px-4">
               <ShowAllBranded
                 brands={allBranded}
@@ -150,7 +138,7 @@ const Home = () => {
                   <BrandedCard
                     brand={selectedBrand}
                     onClose={closeBrandCard}
-                    className="bg-[#F5DEB3] border-[#8B5A2B] border rounded-lg shadow-lg"
+                    className="bg-[#F5DEB3] border-l-4 border-[#228B22] rounded-lg shadow-lg"
                   />
                 </div>
               )}
@@ -158,19 +146,25 @@ const Home = () => {
               {/* Main content area - Products */}
               <div className={selectedBrand ? "md:w-3/4 lg:w-4/5" : "w-full"}>
                 {isLoading ? (
-                  <div className="flex justify-center items-center h-64">
-                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#317873]"></div>
+                  <div className="flex justify-center items-center h-64 bg-[#F5DEB3] rounded-lg shadow-md border-l-4 border-[#317873]">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#228B22]"></div>
                   </div>
                 ) : (
-                  <BrandedProductCart
-                    products={allBrandedProducts || []}
-                    selectedBrand={selectedBrand}
-                    currencyType={currencyType}
-                    exchangeRate={exchangeRate}
-                    onCardClick={handleProductCardClick}
-                    onToggleWishlist={handleToggleWishlist}
-                    wishlistItems={Array.isArray(wishlist) ? wishlist : []}
-                  />
+                  <div className="bg-[#F5DEB3] rounded-lg shadow-lg border-l-4 border-[#317873] p-4">
+                    <h2 className="text-[#000000] font-bold text-xl mb-4 flex items-center">
+                      <Leaf className="mr-2 text-[#228B22]" size={20} />
+                      {selectedBrand ? `${selectedBrand.name} Products` : 'All Eco-Friendly Products'}
+                    </h2>
+                    <BrandedProductCart
+                      products={allBrandedProducts || []}
+                      selectedBrand={selectedBrand}
+                      currencyType={currencyType}
+                      exchangeRate={exchangeRate}
+                      onCardClick={handleProductCardClick}
+                      onToggleWishlist={handleToggleWishlist}
+                      wishlistItems={Array.isArray(wishlist) ? wishlist : []}
+                    />
+                  </div>
                 )}
               </div>
             </div>

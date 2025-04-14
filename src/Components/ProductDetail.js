@@ -67,8 +67,8 @@ const ProductDetail = ({ url, source }) => {
         if (!response.ok) {
           throw new Error("Failed to fetch reviews");
         }
-
         const data = await response.json();
+        console.log("Reviews response:", data)
         setReviews(data || []);
       } catch (err) {
         console.error("Error fetching reviews:", err.message);

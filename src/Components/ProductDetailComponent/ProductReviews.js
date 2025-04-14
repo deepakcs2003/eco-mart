@@ -1,376 +1,338 @@
 import React from "react";
-import { Star, ThumbsUp, ThumbsDown, Leaf, Package, Clock, DollarSign, Info, Award, AlertTriangle } from "lucide-react";
+import { Star, ThumbsUp, ThumbsDown, Leaf, Award, AlertTriangle } from "lucide-react";
 
-const ProductReviews = ({ reviews = {} }) => {
-  // Destructure with default empty objects to prevent errors
-  const { source = "", summary = {}, sustainabilityAnalysis = {}, recommendations = [] } = reviews;
+const ProductReviewDisplay = ({ reviews }) => {
+  // Extract the data safely from your backend response
+  const { source, data } = reviews || {};
   
-  // Color scheme
-  const colors = {
-    primary: "#228B22",    // Forest Green
-    secondary: "#6B8E23",  // Olive Green
-    background: "#A8B5A2", // Sage Green
-    accent1: "#317873",    // Deep Teal
-    accent2: "#87CEEB",    // Sky Blue
-    neutral1: "#8B5A2B",   // Earthy Brown
-    neutral2: "#F5DEB3",   // Warm Beige
-    alert: "#A52A2A",      // Rustic Red
-    text: "#000000"        // Black text
+  // Safely access nested properties
+  const productData = data?.product || {};
+  const summaryData = data?.summary || {};
+  const analysisData = data?.analysis || {};
+  const highlightsData = data?.highlights || {};
+  const sustainabilityData = data?.sustainabilityAnalysis || {};
+
+  // Format date helper function
+  const formatDate = (dateString) => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+    } catch {
+      return "N/A";
+    }
   };
-  
-  // Format numbers
+
+  // Format numbers with 2 decimal places
   const formatNumber = (num) => {
     if (num === undefined || num === null) return "0.00";
     return parseFloat(num).toFixed(2);
   };
 
+  // Safe array access function
+  const safeArray = (arr) => Array.isArray(arr) ? arr : [];
+
   // Calculate star rating
-  const rating = parseFloat(summary.averageRating || 0);
+  const rating = parseFloat(productData?.rating || 0);
   const fullStars = Math.floor(rating);
   const hasHalfStar = rating % 1 >= 0.5;
 
-  // Safe array access function
-  const safeArray = (arr) => {
-    if (!arr || !Array.isArray(arr)) return [];
-    return arr;
-  };
-
-  // Safe object access function
-  const safeObject = (obj) => {
-    if (!obj || typeof obj !== 'object') return {};
-    return obj;
+  // Color scheme
+  const colors = {
+    primary: "#228B22",     // Forest Green
+    secondary: "#6B8E23",   // Olive Green
+    background: "#F0FFF0",  // Light Green Background
+    accent1: "#317873",     // Deep Teal
+    alert: "#A52A2A",       // Rustic Red
+    text: "#333333",        // Dark Gray text
+    textSecondary: "#666666", // Lighter Gray text
+    neutral2: "#FAF0E6",    // Light Beige
+    border: "#DDDDDD",      // Light Gray border
   };
 
   return (
-    <div style={{ backgroundColor: colors.background, color: colors.text }} className="max-w-6xl mx-auto p-6 rounded-lg shadow">
-      {/* Header */}
-      <div style={{ backgroundColor: colors.neutral2 }} className="flex items-center justify-between mb-6 p-4 rounded-lg shadow-sm">
-        <h1 className="text-2xl font-bold" style={{ color: colors.primary }}>Product Reviews Summary</h1>
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium" style={{ color: colors.text }}>Source:</span>
-          <span className="text-sm font-bold capitalize" style={{ color: colors.accent1 }}>{source}</span>
+    <div className="max-w-6xl mx-auto p-3 sm:p-6 rounded-lg shadow-md" style={{ backgroundColor: colors.background, color: colors.text }}>
+      {/* Product Header */}
+    
+      {/* Analysis Summary */}
+      <div className="p-3 sm:p-4 rounded-lg shadow-sm mb-4 sm:mb-6" style={{ backgroundColor: colors.neutral2, border: `1px solid ${colors.border}` }}>
+        <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4" style={{ color: colors.primary }}>Analysis Summary</h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-4">
+          {/* Sentiment Score */}
+          <div className="flex items-center p-3 rounded-lg" style={{ backgroundColor: colors.background, border: `1px solid ${colors.border}` }}>
+            <div
+              className="text-xl sm:text-2xl font-bold rounded-full w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center mr-3 sm:mr-4"
+              style={{
+                backgroundColor: analysisData?.sentiment === "Positive" ? colors.primary : 
+                                analysisData?.sentiment === "Negative" ? colors.alert : colors.textSecondary,
+                color: "#FFFFFF"
+              }}
+            >
+              {Math.round(parseFloat(analysisData?.score || 0) * 100)}%
+            </div>
+            <div>
+              <div className="text-base sm:text-lg font-semibold" style={{ color: colors.text }}>
+                Overall: {analysisData?.sentiment || 'N/A'}
+              </div>
+              <div className="text-xs sm:text-sm" style={{ color: colors.textSecondary }}>
+                Sentiment Score: {formatNumber(analysisData?.score)}
+              </div>
+            </div>
+          </div>
+
+          {/* Rating */}
+          <div className="flex items-center p-3 rounded-lg" style={{ backgroundColor: colors.background, border: `1px solid ${colors.border}` }}>
+            <div className="text-2xl sm:text-3xl font-bold mr-3 sm:mr-4" style={{ color: colors.text }}>{formatNumber(rating)}</div>
+            <div>
+              <div className="flex mb-1">
+                {[...Array(5)].map((_, i) => (
+                  <Star 
+                    key={i} 
+                    size={16} 
+                    style={{ 
+                      fill: i < fullStars || (i === fullStars && hasHalfStar) ? colors.secondary : "none", 
+                      color: colors.secondary 
+                    }} 
+                  />
+                ))}
+              </div>
+              <div className="text-xs sm:text-sm" style={{ color: colors.textSecondary }}>Total Reviews: {productData?.totalReviews || 0}</div>
+            </div>
+          </div>
         </div>
+
+        {/* Analysis Summary */}
+        {analysisData?.summary && (
+          <div className="p-3 sm:p-4 rounded-lg mb-3 sm:mb-4" style={{ backgroundColor: colors.background, border: `1px solid ${colors.border}` }}>
+            <h3 className="font-semibold mb-2" style={{ color: colors.secondary }}>Summary</h3>
+            <p className="text-sm sm:text-base" style={{ color: colors.text }}>{analysisData.summary}</p>
+          </div>
+        )}
+
+        {/* Verdict */}
+        {analysisData?.verdict && (
+          <div className="p-3 sm:p-4 rounded-lg" style={{ backgroundColor: colors.background, border: `1px solid ${colors.border}` }}>
+            <h3 className="font-semibold mb-2" style={{ color: colors.secondary }}>Verdict</h3>
+            <p className="text-sm sm:text-base" style={{ color: colors.text }}>{analysisData.verdict}</p>
+          </div>
+        )}
       </div>
 
-      {/* Overall Summary */}
-      <div style={{ backgroundColor: colors.neutral2 }} className="p-4 rounded-lg shadow-sm mb-6">
-        <h2 className="text-xl font-bold mb-4" style={{ color: colors.primary }}>Overall Rating</h2>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Rating Stars */}
-          <div style={{ backgroundColor: colors.background }} className="flex flex-col items-center justify-center p-4 rounded-lg">
-            <div className="text-3xl font-bold mb-2" style={{ color: colors.text }}>{summary.averageRating || 0}</div>
-            <div className="flex mb-2">
-              {[...Array(5)].map((_, i) => (
-                <span key={i}>
-                  {i < fullStars ? (
-                    <Star style={{ fill: colors.secondary, color: colors.secondary }} />
-                  ) : i === fullStars && hasHalfStar ? (
-                    <Star style={{ fill: colors.secondary, color: colors.secondary }} />
-                  ) : (
-                    <Star style={{ color: colors.secondary }} />
-                  )}
-                </span>
-              ))}
-            </div>
-            <div className="text-sm" style={{ color: colors.text }}>Total Reviews: {summary.totalReviews || 0}</div>
-          </div>
-          
-          {/* Sentiment Score */}
-          <div style={{ backgroundColor: colors.background }} className="flex flex-col items-center justify-center p-4 rounded-lg">
-            <div className="text-lg font-semibold mb-2" style={{ color: colors.text }}>Sentiment</div>
-            <div 
-              style={{ 
-                backgroundColor: summary.overallSentiment === "Positive" ? colors.primary : colors.alert,
-                color: "#FFFFFF"
-              }} 
-              className="text-2xl font-bold rounded-full w-16 h-16 flex items-center justify-center"
-            >
-              {Math.round(parseFloat(summary.sentimentScore || 0) * 100)}%
-            </div>
-            <div className="mt-2 text-lg font-medium" style={{ color: colors.text }}>
-              Overall: {summary.overallSentiment || 'N/A'}
-            </div>
-            <div className="mt-1 text-sm" style={{ color: colors.text }}>
-              Sentiment Score: {summary.sentimentScore || 0}
-            </div>
-          </div>
-          
-          {/* Pros and Cons */}
-          <div style={{ backgroundColor: colors.background }} className="flex flex-col p-4 rounded-lg">
-            <div className="flex items-center gap-2 mb-2">
-              <ThumbsUp style={{ color: colors.primary }} size={20} />
-              <span className="font-semibold" style={{ color: colors.text }}>Pros</span>
-            </div>
-            <div className="flex flex-wrap gap-1 mb-3">
-              {safeArray(summary.pros).map((pro, index) => (
-                <span key={index} 
-                  style={{ backgroundColor: colors.primary, color: "#FFFFFF" }} 
-                  className="px-2 py-1 rounded-full text-xs">
-                  {pro.word} ({pro.count})
-                </span>
-              ))}
-            </div>
-            
-            <div className="flex items-center gap-2 mb-2">
-              <ThumbsDown style={{ color: colors.alert }} size={20} />
-              <span className="font-semibold" style={{ color: colors.text }}>Cons</span>
-            </div>
-            <div className="flex flex-wrap gap-1">
-              {safeArray(summary.cons).map((con, index) => (
-                <span key={index} 
-                  style={{ backgroundColor: colors.alert, color: "#FFFFFF" }} 
-                  className="px-2 py-1 rounded-full text-xs">
-                  {con.word} ({con.count})
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      {/* Sustainability Analysis */}
-      <div style={{ backgroundColor: colors.neutral2 }} className="p-4 rounded-lg shadow-sm mb-6">
-        <h2 className="text-xl font-bold mb-4" style={{ color: colors.primary }}>
-          <div className="flex items-center gap-2">
-            <Leaf style={{ color: colors.primary }} />
-            <span>Sustainability Analysis</span>
-          </div>
-        </h2>
-        
-        {/* Top Eco Aspects */}
-        <div className="mb-6">
-          <h3 className="font-semibold mb-3" style={{ color: colors.secondary }}>Top Eco Aspects</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {safeArray(sustainabilityAnalysis.topEcoAspects).map((aspect, index) => (
-              <div key={index} style={{ backgroundColor: colors.background }} className="p-3 rounded">
-                <div className="flex justify-between items-center">
-                  <span className="capitalize font-medium" style={{ color: colors.text }}>{aspect.aspect}</span>
-                  <div 
-                    style={{ 
-                      backgroundColor: aspect.score > 0 ? colors.primary : aspect.score < 0 ? colors.alert : colors.neutral1,
-                      color: "#FFFFFF"
-                    }}
-                    className="px-2 py-1 rounded text-xs"
-                  >
-                    Score: {formatNumber(aspect.score)}
-                  </div>
+      {/* Pros and Cons */}
+      {(safeArray(analysisData?.pros).length > 0 || safeArray(analysisData?.cons).length > 0) && (
+        <div className="p-3 sm:p-4 rounded-lg shadow-sm mb-4 sm:mb-6" style={{ backgroundColor: colors.neutral2, border: `1px solid ${colors.border}` }}>
+          <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4" style={{ color: colors.primary }}>Pros and Cons</h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+            {/* Pros */}
+            {safeArray(analysisData?.pros).length > 0 && (
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <ThumbsUp size={20} style={{ color: colors.primary }} />
+                  <span className="font-semibold" style={{ color: colors.text }}>Pros</span>
                 </div>
-                <div className="mt-2 grid grid-cols-3 gap-2 text-sm">
-                  <div className="flex flex-col items-center" style={{ color: colors.text }}>
-                    <span>Mentions</span>
-                    <span className="font-bold">{aspect.mentions}</span>
-                  </div>
-                  <div className="flex flex-col items-center" style={{ color: colors.primary }}>
-                    <span>Positive</span>
-                    <span className="font-bold">{aspect.positive}</span>
-                  </div>
-                  <div className="flex flex-col items-center" style={{ color: colors.alert }}>
-                    <span>Negative</span>
-                    <span className="font-bold">{aspect.negative}</span>
-                  </div>
+                <div className="p-3 rounded-lg" style={{ backgroundColor: colors.background, border: `1px solid ${colors.border}` }}>
+                  <ul className="list-disc pl-5 space-y-1 text-sm sm:text-base">
+                    {safeArray(analysisData.pros).map((pro, index) => (
+                      <li key={index} style={{ color: colors.text }}>{pro}</li>
+                    ))}
+                  </ul>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
-        
-        {/* Top Positive & Negative Aspects */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          <div>
-            <h3 className="font-semibold mb-3" style={{ color: colors.secondary }}>Top Positive Aspects</h3>
-            <div style={{ backgroundColor: colors.background }} className="p-3 rounded">
-              {safeArray(sustainabilityAnalysis.topPositiveAspects).map((aspect, index) => (
-                <div key={index} className="mb-2 last:mb-0">
-                  <div className="flex justify-between items-center">
-                    <span className="capitalize font-medium" style={{ color: colors.text }}>{aspect.aspect}</span>
-                    <span className="text-sm font-bold" style={{ color: colors.primary }}>Score: {aspect.score}</span>
-                  </div>
-                  <div className="text-sm" style={{ color: colors.text }}>Mentions: {aspect.mentions}</div>
+            )}
+
+            {/* Cons */}
+            {safeArray(analysisData?.cons).length > 0 && (
+              <div className="mt-3 md:mt-0">
+                <div className="flex items-center gap-2 mb-2">
+                  <ThumbsDown size={20} style={{ color: colors.alert }} />
+                  <span className="font-semibold" style={{ color: colors.text }}>Cons</span>
                 </div>
-              ))}
-            </div>
-          </div>
-          
-          <div>
-            <h3 className="font-semibold mb-3" style={{ color: colors.secondary }}>Top Negative Aspects</h3>
-            <div style={{ backgroundColor: colors.background }} className="p-3 rounded">
-              {safeArray(sustainabilityAnalysis.topNegativeAspects).length > 0 ? (
-                safeArray(sustainabilityAnalysis.topNegativeAspects).map((aspect, index) => (
-                  <div key={index} className="mb-2 last:mb-0">
-                    <div className="flex justify-between items-center">
-                      <span className="capitalize font-medium" style={{ color: colors.text }}>{aspect.aspect}</span>
-                      <span className="text-sm font-bold" style={{ color: colors.alert }}>Score: {aspect.score}</span>
-                    </div>
-                    <div className="text-sm" style={{ color: colors.text }}>Mentions: {aspect.mentions}</div>
-                  </div>
-                ))
-              ) : (
-                <p style={{ color: colors.text }}>No negative aspects found.</p>
-              )}
-            </div>
-          </div>
-        </div>
-        
-        {/* Sustainability Concerns */}
-        <div className="mb-6">
-          <h3 className="font-semibold mb-3" style={{ color: colors.secondary }}>Sustainability Concerns</h3>
-          <div style={{ backgroundColor: colors.background }} className="p-3 rounded">
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-              {Object.entries(safeObject(sustainabilityAnalysis.sustainabilityConcerns)).map(([concern, percentage], index) => (
-                <div key={index} className="flex flex-col">
-                  <div className="flex items-center gap-1 mb-1">
-                    {concern === "greenwashing" && <Leaf size={16} style={{ color: colors.primary }} />}
-                    {concern === "packaging" && <Package size={16} style={{ color: colors.accent1 }} />}
-                    {concern === "durability" && <Clock size={16} style={{ color: colors.secondary }} />}
-                    {concern === "effectiveness" && <Award size={16} style={{ color: colors.accent2 }} />}
-                    {concern === "price" && <DollarSign size={16} style={{ color: colors.neutral1 }} />}
-                    <span className="text-sm font-medium capitalize" style={{ color: colors.text }}>{concern}</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
-                      style={{ 
-                        backgroundColor: parseFloat(percentage) > 10 ? colors.alert : 
-                                       parseFloat(percentage) > 5 ? colors.secondary : 
-                                       colors.primary,
-                        width: `${percentage}%`
-                      }}
-                      className="rounded-full h-2"
-                    ></div>
-                  </div>
-                  <div className="text-xs mt-1" style={{ color: colors.text }}>{percentage}%</div>
+                <div className="p-3 rounded-lg" style={{ backgroundColor: colors.background, border: `1px solid ${colors.border}` }}>
+                  <ul className="list-disc pl-5 space-y-1 text-sm sm:text-base">
+                    {safeArray(analysisData.cons).map((con, index) => (
+                      <li key={index} style={{ color: colors.text }}>{con}</li>
+                    ))}
+                  </ul>
                 </div>
-              ))}
-            </div>
+              </div>
+            )}
           </div>
         </div>
-        
-        {/* Eco Claims */}
-        <div className="mb-6">
-          <h3 className="font-semibold mb-3" style={{ color: colors.secondary }}>Eco Claims</h3>
-          <div style={{ backgroundColor: colors.background }} className="p-3 rounded grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <div className="text-sm font-medium mb-1" style={{ color: colors.text }}>Greenwashing Concern:</div>
-              <div 
-                style={{ 
-                  backgroundColor: safeObject(sustainabilityAnalysis.ecoClaims).greenwashingConcern === "Low" ? colors.primary : 
-                                 safeObject(sustainabilityAnalysis.ecoClaims).greenwashingConcern === "Moderate" ? colors.secondary : 
-                                 colors.alert,
-                  color: "#FFFFFF"
-                }}
-                className="px-2 py-1 rounded text-center font-medium"
-              >
-                {safeObject(sustainabilityAnalysis.ecoClaims).greenwashingConcern || 'N/A'}
-              </div>
-              <div className="text-sm mt-1" style={{ color: colors.text }}>
-                Score: {safeObject(sustainabilityAnalysis.ecoClaims).greenwashingScore || 0}
-              </div>
-            </div>
-            
-            <div>
-              <div className="text-sm font-medium mb-1" style={{ color: colors.text }}>Certifications:</div>
-              {safeArray(safeObject(sustainabilityAnalysis.ecoClaims).certifications).length > 0 ? (
-                <div className="flex flex-wrap gap-1">
-                  {safeArray(safeObject(sustainabilityAnalysis.ecoClaims).certifications).map((cert, index) => (
-                    <span key={index} 
-                      style={{ backgroundColor: colors.accent1, color: "#FFFFFF" }} 
-                      className="px-2 py-1 rounded-full text-xs">
-                      {typeof cert === 'object' ? cert.certification : cert}
-                    </span>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-sm italic" style={{ color: colors.text }}>No certifications found</div>
-              )}
-            </div>
-            
-            <div>
-              <div className="text-sm font-medium mb-1" style={{ color: colors.text }}>Sustainability Phrases:</div>
-              {safeArray(sustainabilityAnalysis.sustainabilityPhrases).length > 0 ? (
-                <div className="flex flex-wrap gap-1">
-                  {safeArray(sustainabilityAnalysis.sustainabilityPhrases).map((phrase, index) => (
-                    <span key={index} 
-                      style={{ backgroundColor: colors.primary, color: "#FFFFFF" }} 
-                      className="px-2 py-1 rounded-full text-xs">
-                      {typeof phrase === 'object' ? phrase.phrase : phrase}
-                    </span>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-sm italic" style={{ color: colors.text }}>No sustainability phrases found</div>
-              )}
-            </div>
-          </div>
-        </div>
-        
-        {/* Claim Satisfaction */}
-        <div>
-          <h3 className="font-semibold mb-3" style={{ color: colors.secondary }}>Claim Satisfaction</h3>
-          <div style={{ backgroundColor: colors.background }} className="p-3 rounded grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <div className="text-sm font-medium mb-1" style={{ color: colors.text }}>Satisfaction Category:</div>
-              <div 
-                style={{ 
-                  backgroundColor: safeObject(sustainabilityAnalysis.claimSatisfaction).satisfactionCategory === "High" ? colors.primary : 
-                                 safeObject(sustainabilityAnalysis.claimSatisfaction).satisfactionCategory === "Medium" ? colors.secondary : 
-                                 colors.alert,
-                  color: "#FFFFFF"
-                }}
-                className="px-2 py-1 rounded text-center font-medium"
-              >
-                {safeObject(sustainabilityAnalysis.claimSatisfaction).satisfactionCategory || 'N/A'}
-              </div>
-            </div>
-            
-            <div>
-              <div className="text-sm font-medium mb-1" style={{ color: colors.text }}>Satisfaction Score:</div>
-              <div className="text-lg font-bold" style={{ color: colors.text }}>
-                {safeObject(sustainabilityAnalysis.claimSatisfaction).satisfactionScore || 0}
-              </div>
-            </div>
-            
-            <div>
-              <div className="text-sm font-medium mb-1" style={{ color: colors.text }}>Relevant Reviews:</div>
-              <div className="text-lg font-bold" style={{ color: colors.text }}>
-                {safeObject(sustainabilityAnalysis.claimSatisfaction).relevantReviewCount || 0}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      {/* Recommendations */}
-      {safeArray(recommendations).length > 0 && (
-        <div style={{ backgroundColor: colors.neutral2 }} className="p-4 rounded-lg shadow-sm">
-          <h2 className="text-xl font-bold mb-3" style={{ color: colors.primary }}>
+      )}
+
+      {/* Key Features */}
+      {safeArray(analysisData?.keyFeatures).length > 0 && (
+        <div className="p-3 sm:p-4 rounded-lg shadow-sm mb-4 sm:mb-6" style={{ backgroundColor: colors.neutral2, border: `1px solid ${colors.border}` }}>
+          <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4" style={{ color: colors.primary }}>
             <div className="flex items-center gap-2">
-              <AlertTriangle style={{ color: colors.accent1 }} />
+              <Award size={20} style={{ color: colors.primary }} />
+              <span>Key Features</span>
+            </div>
+          </h2>
+
+          <div className="p-3 rounded-lg" style={{ backgroundColor: colors.background, border: `1px solid ${colors.border}` }}>
+            <ul className="list-disc pl-5 space-y-1 text-sm sm:text-base">
+              {safeArray(analysisData.keyFeatures).map((feature, index) => (
+                <li key={index} style={{ color: colors.text }}>{feature}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
+
+      {/* Highlights */}
+      {(safeArray(highlightsData?.positive).length > 0 || safeArray(highlightsData?.negative).length > 0) && (
+        <div className="p-3 sm:p-4 rounded-lg shadow-sm mb-4 sm:mb-6" style={{ backgroundColor: colors.neutral2, border: `1px solid ${colors.border}` }}>
+          <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4" style={{ color: colors.primary }}>Highlights</h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+            {/* Positive Highlights */}
+            {safeArray(highlightsData?.positive).length > 0 && (
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <ThumbsUp size={20} style={{ color: colors.primary }} />
+                  <span className="font-semibold" style={{ color: colors.text }}>Positive Highlights</span>
+                </div>
+                <div className="p-3 rounded-lg space-y-3" style={{ backgroundColor: colors.background, border: `1px solid ${colors.border}` }}>
+                  {safeArray(highlightsData.positive).map((highlight, index) => (
+                    <div key={index} className="border-b border-gray-300 pb-2 last:border-0 last:pb-0">
+                      <p className="text-xs sm:text-sm mb-1" style={{ color: colors.text }}>{highlight.text}</p>
+                      <div className="flex justify-between items-center text-xs">
+                        <span style={{ color: colors.accent1 }}>{formatDate(highlight.date)}</span>
+                        {highlight.rating > 0 && (
+                          <span className="flex items-center gap-1">
+                            <Star size={12} style={{ fill: colors.secondary, color: colors.secondary }} />
+                            {formatNumber(highlight.rating)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Negative Highlights */}
+            {safeArray(highlightsData?.negative).length > 0 && (
+              <div className="mt-3 md:mt-0">
+                <div className="flex items-center gap-2 mb-2">
+                  <ThumbsDown size={20} style={{ color: colors.alert }} />
+                  <span className="font-semibold" style={{ color: colors.text }}>Negative Highlights</span>
+                </div>
+                <div className="p-3 rounded-lg space-y-3" style={{ backgroundColor: colors.background, border: `1px solid ${colors.border}` }}>
+                  {safeArray(highlightsData.negative).map((highlight, index) => (
+                    <div key={index} className="border-b border-gray-300 pb-2 last:border-0 last:pb-0">
+                      <p className="text-xs sm:text-sm mb-1" style={{ color: colors.text }}>{highlight.text}</p>
+                      <div className="flex justify-between items-center text-xs">
+                        <span style={{ color: colors.accent1 }}>{formatDate(highlight.date)}</span>
+                        {highlight.rating > 0 && (
+                          <span className="flex items-center gap-1">
+                            <Star size={12} style={{ fill: colors.secondary, color: colors.secondary }} />
+                            {formatNumber(highlight.rating)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Eco-Friendly Analysis */}
+      {sustainabilityData && (
+        safeArray(sustainabilityData.topEcoAspects).length > 0 || 
+        safeArray(sustainabilityData.topPositiveAspects).length > 0 || 
+        safeArray(sustainabilityData.topNegativeAspects).length > 0
+      ) && (
+        <div className="p-3 sm:p-4 rounded-lg shadow-sm mb-4 sm:mb-6" style={{ backgroundColor: colors.neutral2, border: `1px solid ${colors.border}` }}>
+          <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4" style={{ color: colors.primary }}>
+            <div className="flex items-center gap-2">
+              <Leaf size={20} style={{ color: colors.primary }} />
+              <span>Eco-Friendly Analysis</span>
+            </div>
+          </h2>
+
+          <div className="p-3 rounded-lg" style={{ backgroundColor: colors.background, border: `1px solid ${colors.border}` }}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+              {safeArray(sustainabilityData?.topEcoAspects).length > 0 && (
+                <div>
+                  <h3 className="font-semibold mb-2" style={{ color: colors.secondary }}>Top Eco Aspects</h3>
+                  <ul className="list-disc pl-5 space-y-1 text-xs sm:text-sm">
+                    {sustainabilityData.topEcoAspects.map((eco, index) => (
+                      <li key={index} style={{ color: colors.text }}>
+                        {eco.aspect} (Score: {formatNumber(eco.score)}, Mentions: {eco.mentions})
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {safeArray(sustainabilityData?.ecoClaims?.certifications).length > 0 && (
+                <div className="mt-3 md:mt-0">
+                  <h3 className="font-semibold mb-2" style={{ color: colors.secondary }}>Eco-Certifications</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {sustainabilityData.ecoClaims.certifications.map((cert, index) => (
+                      <span key={index} className="px-2 py-1 rounded-full text-xs" 
+                        style={{ backgroundColor: colors.primary, color: "#FFFFFF" }}>{cert}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {safeArray(sustainabilityData?.topPositiveAspects).length > 0 && (
+                <div className="mt-3">
+                  <h3 className="font-semibold mb-2" style={{ color: colors.secondary }}>Top Positive Aspects</h3>
+                  <ul className="list-disc pl-5 space-y-1 text-xs sm:text-sm">
+                    {sustainabilityData.topPositiveAspects.map((aspect, index) => (
+                      <li key={index} style={{ color: colors.text }}>
+                        {aspect.aspect} (Score: {formatNumber(aspect.score)}, Mentions: {aspect.mentions})
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {safeArray(sustainabilityData?.topNegativeAspects).length > 0 && (
+                <div className="mt-3">
+                  <h3 className="font-semibold mb-2" style={{ color: colors.secondary }}>Top Negative Aspects</h3>
+                  <ul className="list-disc pl-5 space-y-1 text-xs sm:text-sm">
+                    {sustainabilityData.topNegativeAspects.map((aspect, index) => (
+                      <li key={index} style={{ color: colors.text }}>
+                        {aspect.aspect} (Score: {formatNumber(aspect.score)}, Mentions: {aspect.mentions})
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Recommendations */}
+      {safeArray(data?.recommendations).length > 0 && (
+        <div className="p-3 sm:p-4 rounded-lg shadow-sm" style={{ backgroundColor: colors.neutral2, border: `1px solid ${colors.border}` }}>
+          <h2 className="text-lg sm:text-xl font-bold mb-3" style={{ color: colors.primary }}>
+            <div className="flex items-center gap-2">
+              <AlertTriangle size={20} style={{ color: colors.accent1 }} />
               <span>Recommendations</span>
             </div>
           </h2>
-          <ul style={{ backgroundColor: colors.background }} className="rounded p-3 space-y-2">
-            {safeArray(recommendations).map((recommendation, index) => (
-              <li key={index} className="flex items-start gap-2">
-                <div style={{ backgroundColor: colors.accent1, color: "#FFFFFF" }} className="rounded-full p-1 mt-0.5 h-5 w-5 flex items-center justify-center">
-                  <span className="text-xs font-bold">{index + 1}</span>
-                </div>
-                <span style={{ color: colors.text }}>{recommendation}</span>
-              </li>
-            ))}
-          </ul>
+          <div className="rounded p-3 space-y-2" style={{ backgroundColor: colors.background, border: `1px solid ${colors.border}` }}>
+            <ul className="list-disc pl-5 space-y-1 text-sm sm:text-base">
+              {data.recommendations.map((recommendation, index) => (
+                <li key={index} style={{ color: colors.text }}>{recommendation}</li>
+              ))}
+            </ul>
+          </div>
         </div>
       )}
-      
-      {/* Original Reviews section (if needed) */}
-      <div style={{ backgroundColor: colors.neutral2 }} className="p-4 rounded-lg shadow-sm mt-6">
-        <h2 className="text-xl font-bold mb-4" style={{ color: colors.primary }}>Product Reviews</h2>
-        {/* This section would display the reviews array if it's passed to the component */}
-        <div style={{ backgroundColor: colors.background, color: colors.text }} className="p-3 rounded">
-          <p>Review data can be displayed here when available.</p>
-        </div>
-      </div>
     </div>
   );
 };
 
-export default ProductReviews;
+export default ProductReviewDisplay;

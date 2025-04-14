@@ -14,7 +14,7 @@ const productDetail = async (req, res) => {
       return res.status(500).json({ error: "ZYTE API key is missing" });
     }
 
-    console.log("Fetching details for:", url);
+    // console.log("Fetching details for:", url);
 
     let attempt = 0;
     let zyteResponse;
@@ -35,7 +35,6 @@ const productDetail = async (req, res) => {
           }
         );
 
-        console.log(`Attempt ${attempt}: Zyte API Response:`, JSON.stringify(zyteResponse.data, null, 2));
 
         // Ensure the response contains valid product data
         if (zyteResponse.data && zyteResponse.data.product) {
