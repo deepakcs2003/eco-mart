@@ -11,7 +11,7 @@ function App() {
       <div className="flex flex-col min-h-screen">
         <ToastContainer />
         <Header />
-        <main className="flex-grow overflow-hidden pt-14">
+        <main className="flex-grow overflow-hidden pt-16 bg-[#F5DEB3]">
           <Outlet /> {/* This will render the nested routes dynamically */}
         </main>
         <Footer />

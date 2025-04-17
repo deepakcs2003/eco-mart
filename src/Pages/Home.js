@@ -103,7 +103,7 @@ const Home = () => {
   };
 
   return (
-    <div className="bg-[#B5C4B1] min-h-screen w-full">
+    <div className="bg-[#daf3d4] min-h-screen w-full">
       {selectedProduct ? (
         <div className="min-h-screen bg-[#B5C4B1] font-sans pt-4 container mx-auto px-4">
           <button
@@ -120,7 +120,7 @@ const Home = () => {
       ) : (
         <>
           {/* Brand scrollable bar */}
-          <div className="bg-[#F5DEB3] py-4 shadow-md border-b-2 border-[#8B5A2B]">
+          <div className="bg-[#F5DEB3]  py-4 shadow-md border-b-2 border-[#8B5A2B]">
             <div className="container mx-auto px-4">
               <ShowAllBranded
                 brands={allBranded}
@@ -130,7 +130,7 @@ const Home = () => {
             </div>
           </div>
 
-          <div className="w-full px-4 py-6" id="product-section">
+          <div className="w-full p-1 py-6" id="product-section">
             <div className="flex flex-col md:flex-row gap-6 max-w-screen-2xl mx-auto">
               {/* Left sidebar - Brand card */}
               {selectedBrand && (
@@ -150,7 +150,7 @@ const Home = () => {
                     <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#228B22]"></div>
                   </div>
                 ) : (
-                  <div className="bg-[#F5DEB3] rounded-lg shadow-lg border-l-4 border-[#317873] p-4">
+                  <div className="bg-[#F5DEB3] rounded-lg shadow-lg border-l-4 border-[#317873] pt-2">
                     <h2 className="text-[#000000] font-bold text-xl mb-4 flex items-center">
                       <Leaf className="mr-2 text-[#228B22]" size={20} />
                       {selectedBrand ? `${selectedBrand.name} Products` : 'All Eco-Friendly Products'}

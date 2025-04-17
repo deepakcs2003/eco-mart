@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Menu, Search, X, User, Shield } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
+import logo from "../Assist/eco_mart-logo.jpg"; // Adjust the path as necessary
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -15,7 +15,7 @@ const Header = () => {
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
     const storedUser = localStorage.getItem('user');
-    
+
     if (storedToken && storedUser) {
       setToken(storedToken);
       setUser(JSON.parse(storedUser));
@@ -60,11 +60,11 @@ const Header = () => {
     // Remove user data and token from localStorage
     localStorage.removeItem('user');
     localStorage.removeItem('token');
-    
+
     // Clear state
     setUser(null);
     setToken(null);
-    
+
     // Refresh the page to reset app state and redirect to home
     window.location.href = '/';
   };
@@ -75,12 +75,16 @@ const Header = () => {
   return (
     <header className="fixed top-0 left-0 w-full bg-teal-700 text-white shadow-lg z-50">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <a href="/" className="flex-shrink-0">
-            <span className="text-xl font-bold tracking-wider">MyApp</span>
+            <div className="flex items-center justify-center space-x-3">
+              <div className="bg-green-500 rounded-full">
+                <img src={logo} alt="Logo" className="h-14 w-14 rounded-full object-contain" />
+              </div>
+              <span className="text-xl font-bold tracking-wider">Eco-Mart</span>
+            </div>
           </a>
-
           {/* Desktop Search */}
           <div className="hidden md:flex items-center space-x-4">
             <div className="relative flex">
@@ -112,15 +116,15 @@ const Header = () => {
             <a href="/categories" className="hover:text-teal-200">
               Categories
             </a>
-            
+
             {token ? (
               <>
                 {/* Show these links when user is logged in */}
-                
+
                 <a href="/wishlist" className="hover:text-teal-200">
                   Wishlist
                 </a>
-                
+
                 {/* Show Admin link if user has admin role */}
                 {isAdmin && (
                   <a href="/adminBoard" className="flex items-center space-x-1 bg-purple-600 px-3 py-1 rounded-full hover:bg-purple-700">
@@ -128,12 +132,12 @@ const Header = () => {
                     <span>Admin</span>
                   </a>
                 )}
-                
+
                 <div className="flex items-center space-x-2">
                   <User className="h-4 w-4" />
                   <span className="text-teal-200">{user?.name || 'User'}</span>
                 </div>
-                <button 
+                <button
                   onClick={handleLogout}
                   className="bg-red-500 hover:bg-red-600 px-3 py-1 rounded-full text-sm"
                 >
@@ -193,15 +197,15 @@ const Header = () => {
             <a href="/categories" className="px-4 py-2 text-sm hover:bg-teal-600 rounded-lg">
               Categories
             </a>
-            
+
             {token ? (
               <>
                 {/* Show these links when user is logged in (mobile) */}
-              
+
                 <a href="/wishlist" className="px-4 py-2 text-sm hover:bg-teal-600 rounded-lg">
                   Wishlist
                 </a>
-                
+
                 {/* Show Admin link if user has admin role (mobile) */}
                 {isAdmin && (
                   <a href="/admin" className="mx-4 my-1 flex items-center space-x-1 bg-purple-600 px-3 py-2 rounded-lg text-sm hover:bg-purple-700">
@@ -209,12 +213,12 @@ const Header = () => {
                     <span>Admin Dashboard</span>
                   </a>
                 )}
-                
+
                 <div className="px-4 py-2 text-sm flex items-center space-x-2">
                   <User className="h-4 w-4" />
                   <span>{user?.name || 'User'}</span>
                 </div>
-                <button 
+                <button
                   onClick={handleLogout}
                   className="mx-4 bg-red-500 hover:bg-red-600 px-3 py-2 rounded-lg text-sm"
                 >
