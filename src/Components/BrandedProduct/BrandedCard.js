@@ -41,10 +41,7 @@ const BrandedCard = ({ brand, onClose }) => {
               src={brand.imageUrl || "/default-brand.png"}
               alt={brand.name}
               className="object-contain h-28 w-28 rounded-full"
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = "/default-brand.png";
-              }}
+              
             />
           </div>
         </div>
